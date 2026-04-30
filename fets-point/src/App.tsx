@@ -64,6 +64,7 @@ const RaiseACasePage = lazy(() => import('./components/RaiseACasePage').then(mod
 
 const FetsProfilePage = lazy(() => import('./components/FetsProfile').then(module => ({ default: module.FetsProfile })))
 const CMAAvailabilityWidget = lazy(() => import('./components/CMAAvailabilityWidget').then(module => ({ default: module.CMAAvailabilityWidget })))
+const GBPDashboard = lazy(() => import('./pages/GBPDashboard'))
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -126,6 +127,7 @@ function AppContent() {
       if (activeTab === 'lost-and-found') return <LostAndFound />;
       if (activeTab === 'fets-roster') return <FetsRoster />;
       if (activeTab === 'cma-availability') return <CMAAvailabilityWidget />;
+      if (activeTab === 'gbp') return <GBPDashboard />;
     }
 
     const routeComponents: { [key: string]: { component: JSX.Element; name: string } } = {
@@ -147,7 +149,8 @@ function AppContent() {
       'user-management': { component: <UserManagement onNavigate={setActiveTab} />, name: 'User Management' },
       'profile': { component: <FetsProfilePage />, name: 'Profile' },
       'fets-omni-ai': { component: <FetsIntelligence initialQuery={aiQuery} />, name: 'FETS AI' },
-      'cma-availability': { component: <CMAAvailabilityWidget />, name: 'CMA Availability' }
+      'cma-availability': { component: <CMAAvailabilityWidget />, name: 'CMA Availability' },
+        'gbp': { component: <GBPDashboard />, name: 'Google Business' }
     }
 
     const currentRoute = routeComponents[activeTab] || routeComponents['command-center'];
