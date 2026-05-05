@@ -59,8 +59,27 @@ async function gbpFetch(url: string, options: RequestInit = {}) {
       ...(options.headers as Record<string, string> ?? {}),
     },
   })
-  const data = await res.json()
-  return { data, status: res.status }
+  const text = await res.text()
+  const contentType = res.headers.get('content-type') ?? ''
+  if (contentType.includes('application/json')) {
+    try {
+      return { data: JSON.parse(text), status: res.status }
+    } catch {
+      return {
+        data: { error: 'Invalid JSON from Google API', body: text.slice(0, 500), upstreamStatus: res.status, upstreamUrl: url },
+        status: 502,
+      }
+    }
+  }
+  return {
+    data: {
+      error: 'Google API returned non-JSON response (likely API not enabled or wrong host)',
+      upstreamStatus: res.status,
+      upstreamUrl: url,
+      bodyPreview: text.slice(0, 300),
+    },
+    status: res.status >= 400 ? res.status : 502,
+  }
 }
 
 // ── Main Handler ──────────────────────────────────────────────────────────
