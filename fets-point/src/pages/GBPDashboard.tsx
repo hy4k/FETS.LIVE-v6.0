@@ -3,7 +3,7 @@ import { GBPReviewPanel } from '../components/GBP';
 import { GBPInsightsPanel } from '../components/GBP';
 import { GBPPostPublisher } from '../components/GBP';
 import { GBPQandA } from '../components/GBP';
-import { useGBP } from '../hooks/useGBP';
+import { useGBP, useGBPDemoMode } from '../hooks/useGBP';
 
 type GBPTab = 'overview' | 'reviews' | 'posts' | 'qa' | 'insights';
 type Branch = 'cochin' | 'calicut';
@@ -11,14 +11,15 @@ type Branch = 'cochin' | 'calicut';
 const GBPDashboard: React.FC = () => {
   const [activeTab, setActiveTab] = useState<GBPTab>('overview');
   const [activeBranch, setActiveBranch] = useState<Branch>('cochin');
-  const { businessInfo, loading, error } = useGBP(activeBranch);
+  const { businessInfo, loading, error, isDemo } = useGBP(activeBranch);
+  const globalDemo = useGBPDemoMode();
 
   const tabs: { id: GBPTab; label: string; icon: string }[] = [
-    { id: 'overview', label: 'Overview', icon: '\uD83C\uDFE2' },
-    { id: 'reviews', label: 'Reviews', icon: '\u2B50' },
-    { id: 'posts', label: 'Posts', icon: '\uD83D\uDCDD' },
-    { id: 'qa', label: 'Q&A', icon: '\u2753' },
-    { id: 'insights', label: 'Insights', icon: '\uD83D\uDCCA' },
+    { id: 'overview', label: 'Overview', icon: '🏢' },
+    { id: 'reviews', label: 'Reviews', icon: '⭐' },
+    { id: 'posts', label: 'Posts', icon: '📝' },
+    { id: 'qa', label: 'Q&A', icon: '❓' },
+    { id: 'insights', label: 'Insights', icon: '📊' },
   ];
 
   return (
@@ -48,6 +49,20 @@ const GBPDashboard: React.FC = () => {
           </div>
         </div>
 
+        {/* Demo Mode Banner */}
+        {(isDemo || globalDemo) && (
+          <div className="bg-amber-50 border border-amber-200 rounded-xl p-4 mb-6 flex items-start gap-3">
+            <span className="text-xl mt-0.5">&#x1F6A7;</span>
+            <div>
+              <p className="text-sm font-semibold text-amber-800">Demo Mode — Google API Approval Pending</p>
+              <p className="text-xs text-amber-600 mt-1">
+                Showing sample data. Once Google approves the Business Profile API access, live data will appear automatically.
+                Actions like replying to reviews and posting updates will work locally in demo mode but won't sync to Google.
+              </p>
+            </div>
+          </div>
+        )}
+
         {/* Business Info Card */}
         {loading ? (
           <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 mb-6 animate-pulse">
@@ -57,7 +72,7 @@ const GBPDashboard: React.FC = () => {
         ) : businessInfo ? (
           <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 mb-6">
             <div className="flex items-center gap-4">
-              <div className="w-14 h-14 rounded-xl bg-blue-50 flex items-center justify-center text-2xl">\uD83C\uDFEB</div>
+              <div className="w-14 h-14 rounded-xl bg-blue-50 flex items-center justify-center text-2xl">{'🏫'}</div>
               <div>
                 <h2 className="text-xl font-bold text-gray-900">{businessInfo.title}</h2>
                 <p className="text-gray-500 text-sm">{businessInfo.storefrontAddress?.addressLines?.join(', ')}</p>
@@ -68,7 +83,7 @@ const GBPDashboard: React.FC = () => {
                 </span>
               </div>
               <div className="ml-auto text-right">
-                <p className="text-3xl font-bold text-gray-900">{businessInfo.metadata?.mapsUri ? '\uD83D\uDCCD' : ''}</p>
+                <p className="text-3xl font-bold text-gray-900">{businessInfo.metadata?.mapsUri ? '📍' : ''}</p>
               </div>
             </div>
           </div>
