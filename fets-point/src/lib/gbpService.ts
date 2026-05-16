@@ -57,7 +57,12 @@ async function parseJsonOrThrow(res: Response): Promise<any> {
   }
 
   if (!res.ok) {
-    throw new Error(data?.error ?? `GBP API error ${res.status}`)
+    // Edge function may return error as string OR as Google's structured error object
+    const rawErr = data?.error
+    const errMsg = typeof rawErr === 'string'
+      ? rawErr
+      : rawErr?.message ?? `GBP API error ${res.status}`
+    throw new Error(errMsg)
   }
   return data
 }

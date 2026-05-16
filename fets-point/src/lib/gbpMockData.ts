@@ -311,8 +311,11 @@ export const mockGBP = {
 export function isGBPQuotaError(err: unknown): boolean {
   if (err instanceof Error) {
     const msg = err.message.toLowerCase()
-    return msg.includes('429') || msg.includes('quota') || msg.includes('rate') ||
-      msg.includes('non-json') || msg.includes('gbp api error') || msg.includes('gbp proxy')
+    return msg.includes('429') || msg.includes('quota') || msg.includes('rate_limit') ||
+      msg.includes('resource_exhausted') || msg.includes('non-json') ||
+      msg.includes('gbp api error') || msg.includes('gbp proxy') ||
+      msg.includes('not enabled') || msg.includes('[object object]') ||
+      msg.includes('api not enabled')
   }
   return false
 }
