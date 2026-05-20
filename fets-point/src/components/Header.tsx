@@ -280,10 +280,10 @@ export function Header({ isMobile = false, sidebarOpen = false, setSidebarOpen, 
                         <button
                           key={item.id}
                           onClick={() => { setActiveTab?.(item.id); setSidebarOpen?.(false); setShowManagementMenu(false); }}
-                          className="w-full flex items-center justify-between p-2 rounded-lg transition-all hover:bg-white/5 text-white/80"
+                          className={`w-full flex items-center justify-between p-2 rounded-lg transition-all hover:bg-white/5 ${activeTab === item.id ? 'bg-white/10 text-[#FACC15]' : 'text-white/80'}`}
                         >
                           <div className="flex items-center gap-2">
-                            <item.icon size={14} className="text-amber-400" />
+                            <item.icon size={14} className={activeTab === item.id ? 'text-[#FACC15]' : 'text-amber-400'} />
                             <span className="text-[10px] font-bold uppercase tracking-wider">{item.label}</span>
                           </div>
                           <ChevronRight size={12} className="opacity-20" />
