@@ -2,17 +2,32 @@
 // Shows all reviews, avg rating, unreplied count. Allows replying from fets.live
 
 import React, { useState } from 'react'
+import { 
+  Star, 
+  MessageSquare, 
+  Trash2, 
+  Edit, 
+  Plus, 
+  AlertCircle, 
+  Loader2 
+} from 'lucide-react'
 import { useGBPReviews } from '../../hooks/useGBP'
 import type { GBPBranch, GBPReview } from '../../types/gbp.types'
 import { starRatingToNumber } from '../../types/gbp.types'
 
-const STAR_COLORS = { 1: '#ef4444', 2: '#f97316', 3: '#eab308', 4: '#84cc16', 5: '#22c55e' }
-
-function StarRating({ rating, size = 16 }: { rating: number; size?: number }) {
+function StarRating({ rating, size = 14 }: { rating: number; size?: number }) {
   return (
     <span className="flex gap-0.5">
       {[1, 2, 3, 4, 5].map(i => (
-        <svg key={i} width={size} height={size} viewBox="0 0 24 24" fill={i <= rating ? '#f59e0b' : '#d1d5db'}>
+        <svg 
+          key={i} 
+          width={size} 
+          height={size} 
+          viewBox="0 0 24 24" 
+          fill={i <= rating ? '#FACC15' : 'rgba(250, 204, 21, 0.1)'}
+          stroke={i <= rating ? '#CA8A04' : 'rgba(250, 204, 21, 0.2)'}
+          strokeWidth="1.5"
+        >
           <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" />
         </svg>
       ))}
@@ -54,61 +69,89 @@ function ReviewCard({ review, onReply, onDeleteReply }: {
   }
 
   return (
-    <div className="bg-white rounded-xl border border-gray-100 shadow-sm p-4 mb-3">
-      <div className="flex items-start justify-between mb-2">
+    <div className="sov-glass border border-[#BADFE7]/10 p-4 rounded-xl mb-4 shadow-[0_4px_20px_rgba(0,0,0,0.15)] hover:border-[#FACC15]/30 transition-all duration-300 group">
+      <div className="flex items-start justify-between gap-2 mb-3">
         <div className="flex items-center gap-3">
-          <div className="w-9 h-9 rounded-full bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center text-white font-bold text-sm">
+          <div className="w-10 h-10 rounded-full bg-gradient-to-br from-[#FACC15] to-[#CA8A04] flex items-center justify-center text-[#1a3a3d] font-bold text-sm shadow-[0_0_10px_rgba(250,204,21,0.2)]">
             {review.reviewer.isAnonymous ? '?' : review.reviewer.displayName.charAt(0).toUpperCase()}
           </div>
           <div>
-            <p className="font-semibold text-gray-800 text-sm">{review.reviewer.isAnonymous ? 'Anonymous' : review.reviewer.displayName}</p>
-            <p className="text-xs text-gray-400">{new Date(review.createTime).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' })}</p>
+            <p className="font-bold text-white text-sm tracking-wide">{review.reviewer.isAnonymous ? 'Anonymous' : review.reviewer.displayName}</p>
+            <p className="text-[10px] text-[#BADFE7]/50 uppercase tracking-wider mt-0.5">
+              {new Date(review.createTime).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' })}
+            </p>
           </div>
         </div>
-        <StarRating rating={stars} />
+        <StarRating rating={stars} size={16} />
       </div>
 
       {review.comment && (
-        <p className="text-gray-700 text-sm mb-3 leading-relaxed">{review.comment}</p>
+        <p className="text-[#BADFE7]/90 text-sm mb-4 leading-relaxed font-medium pl-1 border-l border-[#FACC15]/20">
+          {review.comment}
+        </p>
       )}
 
       {/* Reply section */}
       {!editing && review.reviewReply ? (
-        <div className="bg-blue-50 border border-blue-100 rounded-lg p-3">
-          <div className="flex items-center justify-between mb-1">
-            <span className="text-xs font-semibold text-blue-700">FETS Response</span>
-            <div className="flex gap-2">
-              <button onClick={() => setEditing(true)} className="text-xs text-blue-500 hover:text-blue-700">Edit</button>
-              <button onClick={handleDelete} className="text-xs text-red-400 hover:text-red-600" disabled={saving}>Delete</button>
+        <div className="bg-[#0d1d1f]/50 border border-[#FACC15]/20 rounded-xl p-3.5 mt-3 shadow-inner relative overflow-hidden group-hover:border-[#FACC15]/40 transition-all duration-300">
+          <div className="flex items-center justify-between mb-2 pb-1 border-b border-[#BADFE7]/5">
+            <span className="text-[10px] font-bold text-[#FACC15] tracking-widest uppercase flex items-center gap-1.5">
+              <span className="w-1.5 h-1.5 rounded-full bg-[#FACC15] animate-pulse" />
+              FETS Response
+            </span>
+            <div className="flex gap-3">
+              <button 
+                onClick={() => setEditing(true)} 
+                className="text-xs text-[#BADFE7]/60 hover:text-[#FACC15] transition-colors flex items-center gap-1"
+              >
+                <Edit className="w-3 h-3" />
+                <span>Edit</span>
+              </button>
+              <button 
+                onClick={handleDelete} 
+                className="text-xs text-red-400/80 hover:text-red-400 transition-colors flex items-center gap-1" 
+                disabled={saving}
+              >
+                <Trash2 className="w-3 h-3" />
+                <span>Delete</span>
+              </button>
             </div>
           </div>
-          <p className="text-sm text-gray-700">{review.reviewReply.comment}</p>
+          <p className="text-sm text-[#BADFE7]/80 leading-relaxed pl-1">{review.reviewReply.comment}</p>
         </div>
       ) : !editing ? (
         <button
           onClick={() => setEditing(true)}
-          className="mt-1 text-xs text-blue-600 hover:text-blue-800 font-medium flex items-center gap-1"
+          className="mt-1 text-xs text-[#FACC15] hover:text-[#FEF08A] font-bold tracking-wider uppercase flex items-center gap-1.5 transition-colors duration-200"
         >
-          <span>+</span> Add reply
+          <Plus className="w-3.5 h-3.5" /> 
+          <span>Add reply</span>
         </button>
       ) : (
-        <div className="mt-2">
+        <div className="mt-3 space-y-2 animate-fade-in">
           <textarea
             value={replyText}
             onChange={e => setReplyText(e.target.value)}
-            className="w-full text-sm border border-gray-200 rounded-lg p-2 resize-none focus:outline-none focus:ring-2 focus:ring-blue-300"
+            className="sov-input w-full text-sm focus:ring-[#FACC15]/30 resize-none rounded-xl"
             rows={3}
-            placeholder="Write your reply to this review..."
+            placeholder="Write your official response to this review..."
           />
-          <div className="flex gap-2 mt-2">
+          <div className="flex gap-2">
             <button
               onClick={handleSave}
               disabled={saving || !replyText.trim()}
-              className="px-3 py-1.5 bg-blue-600 text-white text-xs rounded-lg hover:bg-blue-700 disabled:opacity-50"
+              className="px-4 py-2 bg-gradient-to-r from-[#FACC15] to-[#CA8A04] hover:from-[#FEF08A] hover:to-[#FACC15] text-[#1a3a3d] text-xs font-bold uppercase tracking-wider rounded-lg transition-all duration-300 disabled:opacity-50 flex items-center gap-1.5 shadow-[0_0_15px_rgba(250,204,21,0.15)]"
             >
-              {saving ? 'Saving...' : 'Post Reply'}
+              {saving ? (
+                <><Loader2 className="w-3.5 h-3.5 animate-spin" /> Saving...</>
+              ) : (
+                'Post Reply'
+              )}
             </button>
-            <button onClick={() => { setEditing(false); setReplyText(review.reviewReply?.comment ?? '') }} className="px-3 py-1.5 bg-gray-100 text-gray-600 text-xs rounded-lg hover:bg-gray-200">
+            <button 
+              onClick={() => { setEditing(false); setReplyText(review.reviewReply?.comment ?? '') }} 
+              className="px-4 py-2 bg-white/5 border border-[#BADFE7]/20 hover:bg-white/10 text-[#BADFE7] text-xs font-bold uppercase tracking-wider rounded-lg transition-all duration-300"
+            >
               Cancel
             </button>
           </div>
@@ -123,55 +166,67 @@ function BranchReviews({ branch }: { branch: GBPBranch }) {
   const unreplied = reviews.filter(r => !r.reviewReply).length
 
   if (loading && reviews.length === 0) return (
-    <div className="flex items-center justify-center py-10">
-      <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500" />
+    <div className="flex flex-col items-center justify-center py-16 gap-3">
+      <Loader2 className="animate-spin h-8 w-8 text-[#FACC15]" />
+      <span className="text-xs text-[#BADFE7]/60 uppercase tracking-widest">Loading reviews...</span>
     </div>
   )
 
   if (error) return (
-    <div className="bg-red-50 border border-red-200 rounded-lg p-4 text-red-600 text-sm">
-      {error}
+    <div className="p-4 rounded-xl border border-red-500/30 bg-red-500/10 text-red-400 text-sm flex items-center gap-3 shadow-[0_0_15px_rgba(239,68,68,0.05)]">
+      <AlertCircle className="w-5 h-5 flex-shrink-0" />
+      <span>{error}</span>
     </div>
   )
 
   return (
-    <div>
+    <div className="space-y-6">
       {/* Stats bar */}
-      <div className="grid grid-cols-3 gap-3 mb-4">
-        <div className="bg-amber-50 rounded-xl p-3 text-center">
-          <div className="text-2xl font-bold text-amber-600">{averageRating.toFixed(1)}</div>
-          <StarRating rating={Math.round(averageRating)} size={12} />
-          <p className="text-xs text-gray-500 mt-1">Avg Rating</p>
+      <div className="grid grid-cols-3 gap-3">
+        <div className="sov-glass border border-[#FACC15]/20 rounded-2xl p-4 text-center shadow-lg relative overflow-hidden group">
+          <div className="absolute inset-0 bg-gradient-to-b from-[#FACC15]/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+          <div className="text-3xl font-extrabold text-[#FACC15] font-serif tracking-tight">{averageRating.toFixed(1)}</div>
+          <div className="flex justify-center mt-1"><StarRating rating={Math.round(averageRating)} size={11} /></div>
+          <p className="text-[10px] text-[#BADFE7]/50 font-bold uppercase tracking-widest mt-2">Avg Rating</p>
         </div>
-        <div className="bg-blue-50 rounded-xl p-3 text-center">
-          <div className="text-2xl font-bold text-blue-600">{totalCount}</div>
-          <p className="text-xs text-gray-500 mt-1">Total Reviews</p>
+        <div className="sov-glass border border-[#BADFE7]/10 rounded-2xl p-4 text-center shadow-lg relative overflow-hidden group">
+          <div className="absolute inset-0 bg-gradient-to-b from-white/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+          <div className="text-3xl font-extrabold text-white font-serif tracking-tight">{totalCount}</div>
+          <p className="text-[10px] text-[#BADFE7]/50 font-bold uppercase tracking-widest mt-3.5">Total Reviews</p>
         </div>
-        <div className="bg-red-50 rounded-xl p-3 text-center">
-          <div className="text-2xl font-bold text-red-500">{unreplied}</div>
-          <p className="text-xs text-gray-500 mt-1">Unreplied</p>
+        <div className="sov-glass border border-red-500/20 rounded-2xl p-4 text-center shadow-lg relative overflow-hidden group">
+          <div className="absolute inset-0 bg-gradient-to-b from-red-500/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+          <div className={`text-3xl font-extrabold font-serif tracking-tight ${unreplied > 0 ? 'text-red-400' : 'text-emerald-400'}`}>{unreplied}</div>
+          <p className="text-[10px] text-[#BADFE7]/50 font-bold uppercase tracking-widest mt-3.5">Unreplied</p>
         </div>
       </div>
 
       {/* Reviews list */}
-      <div className="max-h-[500px] overflow-y-auto pr-1">
-        {reviews.map(review => (
-          <ReviewCard
-            key={review.reviewId}
-            review={review}
-            onReply={async (name, comment) => { await replyToReview(name, comment) }}
-            onDeleteReply={deleteReply}
-          />
-        ))}
+      <div className="max-h-[500px] overflow-y-auto pr-1 custom-scrollbar space-y-1">
+        {reviews.length === 0 ? (
+          <div className="text-center py-12 text-[#BADFE7]/40 text-sm font-medium">
+            No reviews found for this branch.
+          </div>
+        ) : (
+          reviews.map(review => (
+            <ReviewCard
+              key={review.reviewId}
+              review={review}
+              onReply={async (name, comment) => { await replyToReview(name, comment) }}
+              onDeleteReply={deleteReply}
+            />
+          ))
+        )}
       </div>
 
       {nextPageToken && (
         <button
           onClick={() => fetchReviews(nextPageToken)}
           disabled={loading}
-          className="mt-3 w-full py-2 bg-gray-50 hover:bg-gray-100 text-gray-600 text-sm rounded-lg border border-gray-200"
+          className="w-full py-3 bg-white/5 hover:bg-white/10 text-[#BADFE7] text-xs font-bold uppercase tracking-widest rounded-xl border border-[#BADFE7]/15 transition-all duration-300 flex items-center justify-center gap-2"
         >
-          {loading ? 'Loading...' : 'Load more reviews'}
+          {loading && <Loader2 className="w-3.5 h-3.5 animate-spin" />}
+          <span>{loading ? 'Loading...' : 'Load more reviews'}</span>
         </button>
       )}
     </div>
@@ -182,21 +237,29 @@ export function GBPReviewPanel() {
   const [activeTab, setActiveTab] = useState<GBPBranch>('cochin')
 
   return (
-    <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-5">
-      <div className="flex items-center justify-between mb-5">
+    <div className="sov-card border border-[#BADFE7]/10 p-5 md:p-6 rounded-2xl relative overflow-hidden flex flex-col h-fit">
+      {/* Visual background card glow */}
+      <div className="absolute -top-12 -left-12 w-64 h-64 bg-[#FACC15]/5 rounded-full blur-3xl pointer-events-none" />
+
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6 pb-4 border-b border-[#BADFE7]/10 relative z-10">
         <div>
-          <h2 className="text-lg font-bold text-gray-900">Google Reviews</h2>
-          <p className="text-xs text-gray-400">Manage reviews for both FETS locations</p>
+          <h2 className="text-xl font-bold text-white tracking-wide flex items-center gap-2">
+            <Star className="w-5 h-5 text-[#FACC15] fill-[#FACC15]/20" />
+            <span>Google Reviews</span>
+          </h2>
+          <p className="text-xs text-[#BADFE7]/50 mt-1">Review ratings and replies from FETS locations</p>
         </div>
-        <div className="flex gap-1 bg-gray-100 rounded-xl p-1">
+        
+        {/* Sub-Tab Location Selector */}
+        <div className="flex bg-[#0d1d1f]/60 p-1 rounded-xl border border-[#BADFE7]/10 self-start sm:self-center shadow-md">
           {(['cochin', 'calicut'] as GBPBranch[]).map(branch => (
             <button
               key={branch}
               onClick={() => setActiveTab(branch)}
-              className={`px-4 py-1.5 rounded-lg text-sm font-medium transition-all ${
+              className={`px-4 py-1.5 rounded-lg text-xs font-bold uppercase tracking-wider transition-all duration-300 ${
                 activeTab === branch
-                  ? 'bg-white text-blue-600 shadow-sm'
-                  : 'text-gray-500 hover:text-gray-700'
+                  ? 'bg-[#FACC15] text-[#1a3a3d] shadow-sm'
+                  : 'text-[#BADFE7]/60 hover:text-white hover:bg-white/5'
               }`}
             >
               {branch === 'cochin' ? 'Cochin' : 'Calicut'}
@@ -208,3 +271,4 @@ export function GBPReviewPanel() {
     </div>
   )
 }
+

@@ -247,21 +247,7 @@ export function Header({ isMobile = false, sidebarOpen = false, setSidebarOpen, 
           </div>
         </div>
 
-        {/* Mithun-only private section */}
-        {isMithun && (
-          <div>
-            <p className="text-[9px] font-black text-amber-500/60 uppercase tracking-[0.35em] mb-2.5 pl-1">Private</p>
-            <div className="space-y-1.5">
-              {mithunNavItems.map((item) => (
-                <NavRow
-                  key={item.id}
-                  item={item}
-                  onClick={() => { setActiveTab?.(item.id); setSidebarOpen?.(false); }}
-                />
-              ))}
-            </div>
-          </div>
-        )}
+
 
         {/* Management tools (collapsible) */}
         <div>
@@ -365,6 +351,13 @@ export function Header({ isMobile = false, sidebarOpen = false, setSidebarOpen, 
                         <span className="text-[11px] font-black uppercase tracking-[0.2em] flex-1 text-left">User Management</span>
                         {activeTab === 'user-management' && <div className="w-1.5 h-1.5 rounded-full bg-[#FACC15]" />}
                       </button>
+                      {mithunNavItems.map((item) => (
+                        <NavRow
+                          key={item.id}
+                          item={item}
+                          onClick={() => { setActiveTab?.(item.id); setSidebarOpen?.(false); setShowManagementMenu(false); }}
+                        />
+                      ))}
                     </>
                   )}
                 </div>
@@ -423,20 +416,7 @@ export function Header({ isMobile = false, sidebarOpen = false, setSidebarOpen, 
                     {item.label}
                   </button>
                 ))}
-                {isMithun && (
-                  <>
-                    <div className="h-px bg-white/10 my-0.5" />
-                    {mithunNavItems.map((item) => (
-                      <button
-                        key={item.id}
-                        onClick={() => setActiveTab && setActiveTab(item.id)}
-                        className={`text-left text-base md:text-lg font-black tracking-[0.22em] transition-colors flex items-center gap-3 py-0.5 ${activeTab === item.id ? 'text-[#FACC15]' : 'text-white/40 hover:text-white/80'}`}
-                      >
-                        {item.label}
-                      </button>
-                    ))}
-                  </>
-                )}
+
               </div>
             </div>
           </div>

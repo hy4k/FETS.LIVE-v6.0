@@ -115,8 +115,8 @@ function AppContent() {
     if (isMobile) {
       if (activeTab === 'command-center') return <MobileHome setActiveTab={setActiveTab} profile={profile} />;
       if (activeTab === 'fets-calendar') return <MobileCalendar />;
-      if (activeTab === 'fets-calendar-demo') return <FetsCalendarDemo />;
-      if (activeTab === 'client-portal') return <ClientPortal />;
+      if (activeTab === 'fets-calendar-demo') return isMithun ? <FetsCalendarDemo /> : <MobileHome setActiveTab={setActiveTab} profile={profile} />;
+      if (activeTab === 'client-portal') return isMithun ? <ClientPortal /> : <MobileHome setActiveTab={setActiveTab} profile={profile} />;
       if (activeTab === 'candidate-tracker') return <MobileRegister />;
       if (activeTab === 'my-desk') return isMithun ? <MithunWorkbench onNavigate={setActiveTab} /> : <MobileHome setActiveTab={setActiveTab} profile={profile} />;
       if (activeTab === 'fets-intelligence') return <MobileAiChat />;
@@ -129,7 +129,7 @@ function AppContent() {
       if (activeTab === 'news-manager') return <NewsManager />;
       if (activeTab === 'lost-and-found') return <LostAndFound />;
       if (activeTab === 'fets-roster') return <FetsRoster />;
-      if (activeTab === 'cma-availability') return <CMAAvailabilityWidget />;
+      if (activeTab === 'cma-availability') return isMithun ? <CMAAvailabilityWidget /> : <MobileHome setActiveTab={setActiveTab} profile={profile} />;
       if (activeTab === 'gbp') return <GBPDashboard />;
     }
 
@@ -140,8 +140,8 @@ function AppContent() {
       'candidate-tracker': { component: <CandidateTracker />, name: 'Candidate Tracker' },
       'fets-roster': { component: <FetsRoster />, name: 'FETS Roster' },
       'fets-calendar': { component: <FetsCalendar />, name: 'FETS Calendar' },
-      'fets-calendar-demo': { component: <FetsCalendarDemo />, name: 'CELPIP Calendar' },
-      'client-portal': { component: <ClientPortal />, name: 'Client Portal' },
+      'fets-calendar-demo': { component: isMithun ? <FetsCalendarDemo /> : <CommandCentre onNavigate={setActiveTab} onAiQuery={(q: string) => { setAiQuery(q); setActiveTab('fets-intelligence'); }} />, name: 'CELPIP Calendar' },
+      'client-portal': { component: isMithun ? <ClientPortal /> : <CommandCentre onNavigate={setActiveTab} onAiQuery={(q: string) => { setAiQuery(q); setActiveTab('fets-intelligence'); }} />, name: 'Client Portal' },
       'my-desk': { component: isMithun ? <MithunWorkbench onNavigate={setActiveTab} /> : <CommandCentre onNavigate={setActiveTab} onAiQuery={(q: string) => { setAiQuery(q); setActiveTab('fets-intelligence'); }} />, name: 'My Desk' },
       'staff-management': { component: <StaffManagement />, name: 'Staff Management' },
       'fets-intelligence': { component: <FetsIntelligence initialQuery={aiQuery} />, name: 'FETS Intelligence' },
@@ -153,8 +153,8 @@ function AppContent() {
       'user-management': { component: <UserManagement onNavigate={setActiveTab} />, name: 'User Management' },
       'profile': { component: <FetsProfilePage />, name: 'Profile' },
       'fets-omni-ai': { component: <FetsIntelligence initialQuery={aiQuery} />, name: 'FETS AI' },
-      'cma-availability': { component: <CMAAvailabilityWidget />, name: 'CMA Availability' },
-        'gbp': { component: <GBPDashboard />, name: 'Google Business' }
+      'cma-availability': { component: isMithun ? <CMAAvailabilityWidget /> : <CommandCentre onNavigate={setActiveTab} onAiQuery={(q: string) => { setAiQuery(q); setActiveTab('fets-intelligence'); }} />, name: 'CMA Availability' },
+      'gbp': { component: <GBPDashboard />, name: 'Google Business' }
     }
 
     const currentRoute = routeComponents[activeTab] || routeComponents['command-center'];

@@ -14,7 +14,7 @@ import {
   formatDateForIST, getCurrentISTDateString,
   isToday as isTodayIST, formatDateForDisplay
 } from '../utils/dateUtils'
-import { validateSessionCapacity } from '../utils/sessionUtils'
+import { validateSessionCapacity, getBranchCapacity } from '../utils/sessionUtils'
 import { useCalendarSessions, useSessionMutations } from '../hooks/useCalendarSessions'
 import { useClients, useClientExams } from '../hooks/useClients'
 import { toast } from 'react-hot-toast'
@@ -43,44 +43,44 @@ const EXAM_COLORS: Record<string, {
   bg: string; text: string; border: string; dot: string; badge: string; badgeText: string
 }> = {
   PROMETRIC: {
-    bg: 'rgba(212, 175, 55, 0.08)', text: '#e8d48b',
-    border: 'rgba(212, 175, 55, 0.28)', dot: '#d4af37',
-    badge: 'rgba(212, 175, 55, 0.14)', badgeText: '#f0e6c8',
+    bg: 'rgba(246, 200, 16, 0.06)', text: '#fce16c',
+    border: 'rgba(246, 200, 16, 0.35)', dot: '#f6c810',
+    badge: 'rgba(246, 200, 16, 0.15)', badgeText: '#fce16c',
   },
   PEARSON: {
-    bg: 'rgba(56, 189, 248, 0.07)', text: '#7dd3fc',
-    border: 'rgba(56, 189, 248, 0.25)', dot: '#38bdf8',
-    badge: 'rgba(56, 189, 248, 0.12)', badgeText: '#bae6fd',
+    bg: 'rgba(6, 182, 212, 0.06)', text: '#67e8f9',
+    border: 'rgba(6, 182, 212, 0.35)', dot: '#06b6d4',
+    badge: 'rgba(6, 182, 212, 0.15)', badgeText: '#67e8f9',
   },
   PSI: {
-    bg: 'rgba(190, 24, 93, 0.1)', text: '#f9a8d4',
-    border: 'rgba(190, 24, 93, 0.28)', dot: '#e11d48',
-    badge: 'rgba(190, 24, 93, 0.14)', badgeText: '#fbcfe8',
+    bg: 'rgba(236, 72, 153, 0.06)', text: '#f472b6',
+    border: 'rgba(236, 72, 153, 0.35)', dot: '#ec4899',
+    badge: 'rgba(236, 72, 153, 0.15)', badgeText: '#f472b6',
   },
   CELPIP: {
-    bg: 'rgba(185, 28, 28, 0.1)', text: '#fca5a5',
-    border: 'rgba(220, 38, 38, 0.28)', dot: '#ef4444',
-    badge: 'rgba(185, 28, 28, 0.12)', badgeText: '#fecaca',
+    bg: 'rgba(249, 115, 22, 0.06)', text: '#fdba74',
+    border: 'rgba(249, 115, 22, 0.35)', dot: '#f97316',
+    badge: 'rgba(249, 115, 22, 0.15)', badgeText: '#fdba74',
   },
   CMA: {
-    bg: 'rgba(16, 185, 129, 0.08)', text: '#6ee7b7',
-    border: 'rgba(16, 185, 129, 0.28)', dot: '#10b981',
-    badge: 'rgba(16, 185, 129, 0.12)', badgeText: '#a7f3d0',
+    bg: 'rgba(16, 185, 129, 0.06)', text: '#34d399',
+    border: 'rgba(16, 185, 129, 0.35)', dot: '#10b981',
+    badge: 'rgba(16, 185, 129, 0.15)', badgeText: '#34d399',
   },
   ITTS: {
-    bg: 'rgba(234, 88, 12, 0.09)', text: '#fdba74',
-    border: 'rgba(234, 88, 12, 0.28)', dot: '#ea580c',
-    badge: 'rgba(234, 88, 12, 0.12)', badgeText: '#fed7aa',
+    bg: 'rgba(59, 130, 246, 0.06)', text: '#93c5fd',
+    border: 'rgba(59, 130, 246, 0.35)', dot: '#3b82f6',
+    badge: 'rgba(59, 130, 246, 0.15)', badgeText: '#93c5fd',
   },
   IELTS: {
-    bg: 'rgba(99, 102, 241, 0.08)', text: '#a5b4fc',
-    border: 'rgba(99, 102, 241, 0.28)', dot: '#818cf8',
-    badge: 'rgba(99, 102, 241, 0.12)', badgeText: '#c7d2fe',
+    bg: 'rgba(139, 92, 246, 0.06)', text: '#c084fc',
+    border: 'rgba(139, 92, 246, 0.35)', dot: '#8b5cf6',
+    badge: 'rgba(139, 92, 246, 0.15)', badgeText: '#c084fc',
   },
   OTHER: {
-    bg: 'rgba(148, 163, 184, 0.08)', text: '#cbd5e1',
-    border: 'rgba(148, 163, 184, 0.22)', dot: '#94a3b8',
-    badge: 'rgba(148, 163, 184, 0.1)', badgeText: '#e2e8f0',
+    bg: 'rgba(148, 163, 184, 0.06)', text: '#cbd5e1',
+    border: 'rgba(148, 163, 184, 0.25)', dot: '#94a3b8',
+    badge: 'rgba(148, 163, 184, 0.1)', badgeText: '#cbd5e1',
   },
 }
 
@@ -381,14 +381,15 @@ export function FetsCalendarPremium() {
       <div className="grid grid-cols-7">
         {days.map((date, idx) => {
           if (!date) return (
-            <div key={idx} className="min-h-[120px] bg-[#0A0A0B]/50 border-b border-r border-white/5" />
+            <div key={idx} className="min-h-[175px] bg-[#0A0A0B]/50 border-b border-r border-white/5" />
           )
           const ds = getSessionsForDate(date)
           const allDs = getAllSessionsForDate(date)
           const total = ds.reduce((s, x) => s + x.candidate_count, 0)
           const isCurrentDay = isToday(date)
           const isWeekend = date.getDay() === 0 || date.getDay() === 6
-          // Group by resolved exam kind (CMA vs CELPIP vs Prometric, etc.)
+          
+          // Group by resolved exam kind
           const groups: Record<string, { count: number; kind: ExamKind }> = {}
           ds.forEach(s => {
             const k = resolveExamKind(s)
@@ -400,75 +401,235 @@ export function FetsCalendarPremium() {
             return order.indexOf(a[1].kind) - order.indexOf(b[1].kind)
           })
 
+          const capacity = activeBranch === 'global' ? 100 : getBranchCapacity(activeBranch)
+          const isOverloaded = total >= capacity * 1.5
+          const isPeak = total >= capacity * 0.8
+
+          // Dynamic Ambient Blending Glow background style
+          const cellStyle: React.CSSProperties = {}
+          if (total > 0 && !isCurrentDay) {
+            const uniqueColors = Array.from(new Set(entries.map(([_, stat]) => getExamColor(stat.kind).dot)))
+            if (uniqueColors.length === 1) {
+              const color = uniqueColors[0]
+              cellStyle.background = `radial-gradient(circle at 12% 12%, ${color}16 0%, transparent 65%), #121214`
+              cellStyle.borderColor = `${color}25`
+            } else if (uniqueColors.length >= 2) {
+              const c1 = uniqueColors[0]
+              const c2 = uniqueColors[1]
+              cellStyle.background = `radial-gradient(circle at 12% 12%, ${c1}12 0%, transparent 55%), radial-gradient(circle at 88% 88%, ${c2}12 0%, transparent 55%), #121214`
+              cellStyle.borderColor = `${c1}20`
+            }
+          }
+
+          // SVG progress gauge constants
+          const radius = 14
+          const circumference = 2 * Math.PI * radius // ~87.96
+          const pct = Math.min(total / capacity, 1.5)
+          const strokeDashoffset = circumference - (pct * circumference)
+          const gaugeColor = isOverloaded 
+            ? '#ef4444' // Red
+            : isPeak 
+            ? '#fb5d1e' // Amber-Orange
+            : total > 0
+            ? '#10b981' // Emerald
+            : 'transparent'
+
+          const DateGauge = () => {
+            const displayDate = date.getDate()
+            if (total === 0) {
+              return (
+                <span className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-extrabold transition-colors duration-200
+                  ${isCurrentDay
+                    ? 'bg-gradient-to-r from-[#f6c810] to-[#e0b50b] text-black font-black shadow-[0_0_12px_rgba(246,200,16,0.3)]'
+                    : isWeekend
+                    ? 'text-white/40 group-hover:text-[#f6c810]'
+                    : 'text-white/80 group-hover:text-[#f6c810]'
+                  }`}
+                >
+                  {displayDate}
+                </span>
+              )
+            }
+
+            return (
+              <div className="relative w-9 h-9 flex items-center justify-center shrink-0 select-none">
+                <svg className="absolute inset-0 w-full h-full -rotate-90" viewBox="0 0 36 36">
+                  {/* Track */}
+                  <circle
+                    cx="18"
+                    cy="18"
+                    r={radius}
+                    fill="transparent"
+                    stroke="rgba(255, 255, 255, 0.08)"
+                    strokeWidth="2"
+                  />
+                  {/* Progress */}
+                  <motion.circle
+                    cx="18"
+                    cy="18"
+                    r={radius}
+                    fill="transparent"
+                    stroke={gaugeColor}
+                    strokeWidth="2.5"
+                    strokeDasharray={circumference}
+                    initial={{ strokeDashoffset: circumference }}
+                    animate={{ strokeDashoffset: strokeDashoffset }}
+                    transition={{ duration: 0.6, ease: "easeOut" }}
+                    strokeLinecap="round"
+                    style={{
+                      filter: total > 0 ? `drop-shadow(0 0 4px ${gaugeColor}44)` : 'none'
+                    }}
+                  />
+                </svg>
+                {/* Date text inside */}
+                <span className={`text-[13px] font-black tracking-tight leading-none z-10 transition-colors duration-200
+                  ${isCurrentDay ? 'text-[#f6c810]' : 'text-white group-hover:text-[#f6c810]'}`}
+                >
+                  {displayDate}
+                </span>
+              </div>
+            )
+          }
+
+          // Stacked progress bar representing proportions of exam kinds
+          const examProportions = entries.map(([_, stat]) => {
+            const propPct = (stat.count / total) * 100
+            return {
+              kind: stat.kind,
+              pct: propPct,
+              count: stat.count,
+              color: getExamColor(stat.kind).dot
+            }
+          })
+
           return (
             <div
               key={idx}
               onClick={() => openDetailsModal(date)}
+              style={cellStyle}
               className={`
-                min-h-[120px] p-2 border-b border-r border-white/5 cursor-pointer
-                transition-all duration-300 relative group
+                min-h-[175px] p-3 border-b border-r border-white/5 cursor-pointer
+                transition-all duration-300 relative group overflow-hidden flex flex-col justify-between
                 ${isCurrentDay
-                  ? 'bg-gradient-to-br from-[#f6c810]/10 to-transparent ring-1 ring-inset ring-[#f6c810]/30'
+                  ? 'bg-gradient-to-br from-[#f6c810]/15 via-[#121214] to-[#121214] ring-1 ring-inset ring-[#f6c810]/40 hover:shadow-[0_0_20px_rgba(246,200,16,0.15)] hover:scale-[1.01] hover:z-10'
+                  : total > 0
+                  ? isOverloaded
+                    ? 'hover:ring-1 hover:ring-red-500/30 hover:shadow-[0_0_20px_rgba(239,68,68,0.15)] hover:scale-[1.01] hover:z-10'
+                    : isPeak
+                    ? 'hover:ring-1 hover:ring-amber-500/30 hover:shadow-[0_0_20px_rgba(245,158,11,0.15)] hover:scale-[1.01] hover:z-10'
+                    : 'hover:ring-1 hover:ring-emerald-500/30 hover:shadow-[0_0_20px_rgba(16,185,129,0.15)] hover:scale-[1.01] hover:z-10'
                   : isWeekend
-                  ? 'bg-[#0A0A0B]'
-                  : 'bg-[#121214] hover:bg-white/5'
+                  ? 'bg-[#0A0A0B] hover:bg-white/5 hover:scale-[1.01] hover:z-10'
+                  : 'bg-[#121214] hover:bg-white/5 hover:scale-[1.01] hover:z-10'
                 }
               `}
             >
-              {/* Date number */}
-              <div className="flex items-center justify-between mb-2">
-                <span className={`text-sm font-bold leading-none flex items-center justify-center
-                  ${isCurrentDay
-                    ? 'w-7 h-7 rounded-full bg-gradient-to-r from-[#f6c810] to-[#e0b50b] text-black text-xs shadow-[0_0_15px_rgba(246,200,16,0.4)]'
-                    : isWeekend
-                    ? 'text-white/30'
-                    : 'text-white/70'
-                  }`}
-                >
-                  {date.getDate()}
-                </span>
-                <span
-                  className="min-w-[3.25rem] rounded-lg border border-[#f6c810]/70 bg-[#f6c810]/15 px-2.5 py-1 text-right shadow-[0_0_18px_rgba(246,200,16,0.22)]"
-                  title={`${total} total candidates`}
-                >
-                  <span className="block text-[8px] font-black uppercase leading-none tracking-wider text-[#f6c810]/80">
-                    Total
-                  </span>
-                  <span className="block text-xl font-black leading-none tabular-nums text-[#f6c810]">
-                    {total}
-                  </span>
-                </span>
-              </div>
-              {/* Session pills */}
-              <div className="space-y-1.5">
-                {entries.slice(0, 3).map(([key, stat]) => {
-                  const c = getExamColor(stat.kind)
-                  const label =
-                    stat.kind === 'PEARSON' ? 'PV' :
-                    stat.kind === 'PROMETRIC' ? 'PMT' :
-                    stat.kind === 'PSI' ? 'PSI' :
-                    stat.kind === 'ITTS' ? 'ITTS' :
-                    stat.kind === 'CELPIP' ? 'CELPIP' :
-                    stat.kind === 'CMA' ? 'CMA' :
-                    stat.kind === 'IELTS' ? 'IELTS' : 'Other'
-                  return (
-                    <div key={key} className="flex items-center gap-1.5 px-2 py-1.5 rounded-md border text-[10px] leading-tight shadow-sm transition-all hover:brightness-110"
-                      style={{ backgroundColor: c.badge, borderColor: c.border, color: c.badgeText }}>
-                      <span className="w-1.5 h-1.5 rounded-full shrink-0 shadow-[0_0_6px_currentColor] ring-1 ring-white/10" style={{ backgroundColor: c.dot }} />
-                      <span className="font-bold truncate flex-1 tracking-wide">{label}</span>
-                      <span className="font-black tabular-nums">{stat.count}</span>
+              <div>
+                {/* Micro-progress bar for capacity utilization */}
+                {total > 0 && (
+                  <div className="absolute top-0 left-0 right-0 h-1 bg-white/5 overflow-hidden">
+                    <div 
+                      className={`h-full transition-all duration-500 ${
+                        isOverloaded 
+                          ? 'bg-red-500 shadow-[0_0_8px_#ef4444]' 
+                          : isPeak 
+                          ? 'bg-amber-500 shadow-[0_0_8px_#f59e0b]' 
+                          : 'bg-emerald-500 shadow-[0_0_8px_#10b981]'
+                      }`}
+                      style={{ width: `${Math.min((total / capacity) * 100, 100)}%` }}
+                    />
+                  </div>
+                )}
+
+                {/* Date number & dynamic badges */}
+                <div className="flex items-center justify-between mb-3 mt-1">
+                  <DateGauge />
+                  
+                  {total > 0 && (
+                    <div className="flex items-center gap-1.5 shrink-0">
+                      {/* Session count pill */}
+                      <span 
+                        className="text-[9px] font-black text-white/50 bg-white/5 px-1.5 py-0.5 rounded border border-white/10 uppercase tracking-wider leading-none"
+                        title={`${ds.length} session${ds.length > 1 ? 's' : ''}`}
+                      >
+                        {ds.length}s
+                      </span>
+                      {/* Total Candidates pill */}
+                      <span 
+                        className={`flex items-center gap-1 px-1.5 py-0.5 rounded border text-[11px] font-extrabold tabular-nums leading-none shadow-[0_0_8px_rgba(0,0,0,0.2)] ${
+                          isOverloaded 
+                            ? 'border-red-500/40 bg-red-950/30 text-red-400 shadow-[0_0_8px_rgba(239,68,68,0.15)]' 
+                            : isPeak
+                            ? 'border-amber-500/40 bg-amber-950/30 text-amber-400 shadow-[0_0_8px_rgba(245,158,11,0.15)]'
+                            : 'border-emerald-500/40 bg-emerald-950/30 text-emerald-400 shadow-[0_0_8px_rgba(16,185,129,0.15)]'
+                        }`}
+                        title={`${total} total candidates`}
+                      >
+                        <Users size={10} className="shrink-0" />
+                        <span>{total}</span>
+                      </span>
                     </div>
-                  )
-                })}
-                {entries.length > 3 && (
-                  <div className="text-[9px] text-white/50 font-bold pl-1 uppercase tracking-wider">+{entries.length - 3} more</div>
-                )}
-                {allDs.length > ds.length && (
-                  <div className="text-[9px] text-[#f6c810]/60 font-bold pl-1 uppercase tracking-wider">+{allDs.length - ds.length} filtered</div>
-                )}
+                  )}
+                </div>
+
+                {/* Session pills */}
+                <div className="space-y-1.5">
+                  {entries.slice(0, 3).map(([key, stat]) => {
+                    const c = getExamColor(stat.kind)
+                    const label =
+                      stat.kind === 'PEARSON' ? 'PV' :
+                      stat.kind === 'PROMETRIC' ? 'PMT' :
+                      stat.kind === 'PSI' ? 'PSI' :
+                      stat.kind === 'ITTS' ? 'ITTS' :
+                      stat.kind === 'CELPIP' ? 'CELPIP' :
+                      stat.kind === 'CMA' ? 'CMA' :
+                      stat.kind === 'IELTS' ? 'IELTS' : 'Other'
+                    return (
+                      <div 
+                        key={key} 
+                        className="flex items-center gap-1.5 px-2 py-1 rounded border text-[10px] leading-none shadow-sm transition-all duration-200 hover:scale-[1.02]"
+                        style={{ 
+                          backgroundColor: c.badge, 
+                          borderColor: c.border, 
+                          color: c.badgeText,
+                          boxShadow: `0 2px 4px rgba(0, 0, 0, 0.1), inset 0 1px 0 rgba(255, 255, 255, 0.05)` 
+                        }}
+                      >
+                        <span className="w-1.5 h-1.5 rounded-full shrink-0 shadow-[0_0_6px_currentColor] ring-1 ring-white/10" style={{ backgroundColor: c.dot }} />
+                        <span className="font-bold truncate flex-1 tracking-wide uppercase">{label}</span>
+                        <span className="font-extrabold tabular-nums bg-black/25 px-1 py-0.5 rounded text-[9px] min-w-[14px] text-center">{stat.count}</span>
+                      </div>
+                    )
+                  })}
+                  {entries.length > 3 && (
+                    <div className="text-[9px] text-white/40 font-bold pl-1 uppercase tracking-wider">+{entries.length - 3} more clients</div>
+                  )}
+                  {allDs.length > ds.length && (
+                    <div className="text-[9px] text-[#f6c810]/50 font-bold pl-1 uppercase tracking-wider">+{allDs.length - ds.length} filtered</div>
+                  )}
+                </div>
               </div>
+
+              {/* Stacked Exam Mix Ribbon at the bottom */}
+              {total > 0 && (
+                <div className="absolute bottom-0 left-0 right-0 h-1.5 flex bg-white/5 overflow-hidden">
+                  {examProportions.map((prop, idx) => (
+                    <div
+                      key={idx}
+                      className="h-full first:rounded-l-sm last:rounded-r-sm transition-all duration-300"
+                      style={{
+                        width: `${prop.pct}%`,
+                        backgroundColor: prop.color,
+                        boxShadow: `inset 0 1px 0 rgba(255, 255, 255, 0.2), 0 0 6px ${prop.color}88`
+                      }}
+                      title={`${prop.kind}: ${prop.count} candidates (${Math.round(prop.pct)}%)`}
+                    />
+                  ))}
+                </div>
+              )}
+
               {/* Hover hint */}
-              <div className="absolute bottom-1.5 right-1.5 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+              <div className="absolute bottom-3 right-3 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
                 <Eye size={12} className="text-white/40" />
               </div>
             </div>
