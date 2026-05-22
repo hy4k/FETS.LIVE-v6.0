@@ -3,6 +3,8 @@ import { LayoutDashboard, CalendarDays, AlertCircle, Brain, Globe, X, MapPin, Ch
 import { motion, AnimatePresence } from 'framer-motion';
 import { useBranch } from '../hooks/useBranch';
 import { useAppModules } from '../hooks/useAppModules';
+import { useAuth } from '../hooks/useAuth';
+import { isMithunEmail } from '../utils/authUtils';
 
 interface BottomNavProps {
   activeTab: string;
@@ -10,9 +12,11 @@ interface BottomNavProps {
 }
 
 export function BottomNav({ activeTab, setActiveTab }: BottomNavProps) {
+  const { profile } = useAuth();
   const { activeBranch, setActiveBranch } = useBranch();
   const { modules } = useAppModules();
   const [showBranchPicker, setShowBranchPicker] = useState(false);
+  const isMithun = isMithunEmail(profile?.email);
 
   const branches = [
     { id: 'calicut', label: 'Calicut HQ', sub: 'Kerala, India' },
@@ -23,12 +27,13 @@ export function BottomNav({ activeTab, setActiveTab }: BottomNavProps) {
   const navItems = [
     { id: 'command-center', label: 'Home', icon: LayoutDashboard },
     { id: 'fets-calendar', label: 'Calendar', icon: CalendarDays },
-    { id: 'client-portal', label: 'Clients', icon: Briefcase },
+    { id: 'client-portal', label: 'Clients', icon: Briefcase, restricted: true },
     { id: 'incident-log', label: 'Cases', icon: AlertCircle },
     { id: 'fets-intelligence', label: 'AI', icon: Brain },
-    { id: 'cma-availability', label: 'CMA US', icon: GraduationCap },
+    { id: 'cma-availability', label: 'CMA US', icon: GraduationCap, restricted: true },
     { id: 'gbp', label: 'GBP', icon: Building2 },
   ].filter(item => {
+    if (item.restricted && !isMithun) return false;
     const mod = modules.find(m => m.id === item.id);
     return !mod || mod.is_enabled;
   });
