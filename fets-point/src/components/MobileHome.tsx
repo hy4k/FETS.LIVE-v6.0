@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import {
-  CheckCircle, ExternalLink, ShieldCheck,
+  CheckCircle, ExternalLink, ShieldCheck, Sparkles,
   ChevronRight, Globe,
   Users, LayoutGrid, Shield, ClipboardList,
   Calendar, Server, Newspaper, PackageSearch, Brain, UserCheck,
@@ -18,6 +18,7 @@ import { canSwitchBranches, formatBranchName, getAvailableBranches } from '../ut
 import { isMithunEmail } from '../utils/authUtils';
 import { useAuth } from '../hooks/useAuth';
 import { format } from 'date-fns';
+import { calculateDaysJoined, getMilestoneMessage } from '../utils/dateUtils';
 
 interface MobileHomeProps {
   setActiveTab: (tab: string) => void;
@@ -73,11 +74,12 @@ export function MobileHome({ setActiveTab, profile }: MobileHomeProps) {
     { id: 'command-center', label: 'LIVE', icon: Zap, gradient: 'from-amber-500 to-yellow-600' },
     { id: 'candidate-tracker', label: 'Register', icon: Users, gradient: 'from-blue-500 to-cyan-600' },
     { id: 'fets-calendar', label: 'Calendar', icon: Calendar, gradient: 'from-violet-500 to-purple-600' },
-    { id: 'client-portal', label: 'Clients', icon: Briefcase, gradient: 'from-amber-500 to-orange-600' },
+    { id: 'client-portal', label: 'Clients', icon: Briefcase, gradient: 'from-amber-500 to-orange-600', restricted: true },
     { id: 'fets-roster', label: 'Roster', icon: UserCheck, gradient: 'from-indigo-500 to-blue-600' },
     { id: 'incident-log', label: 'Cases', icon: AlertCircle, gradient: 'from-orange-500 to-red-600' },
-    { id: 'cma-availability', label: 'CMA US', icon: GraduationCap, gradient: 'from-teal-500 to-emerald-600' },
+    { id: 'cma-availability', label: 'CMA US', icon: GraduationCap, gradient: 'from-teal-500 to-emerald-600', restricted: true },
   ].filter(item => {
+    if (item.restricted && !isMithun) return false;
     const mod = modules.find(m => m.id === item.id);
     return !mod || mod.is_enabled;
   });
@@ -95,7 +97,6 @@ export function MobileHome({ setActiveTab, profile }: MobileHomeProps) {
   // Management items (accessible to all) from secondRowItems
   const managementItems = [
     { id: 'incident-log', label: 'Raise A Case', icon: AlertCircle },
-    { id: 'client-portal', label: 'Client Portal', icon: Briefcase },
     { id: 'system-manager', label: 'System Manager', icon: Server },
     { id: 'lost-and-found', label: 'Lost & Found', icon: PackageSearch },
     { id: 'fets-intelligence', label: 'FETS AI', icon: Brain },
@@ -175,6 +176,19 @@ export function MobileHome({ setActiveTab, profile }: MobileHomeProps) {
               <p className="text-[8px] font-bold text-[#FACC15]/50 uppercase tracking-[0.2em] mt-0.5">
                 {profile?.role?.replace('_', ' ') || 'Staff'}
               </p>
+              {profile?.joining_date && (
+                <div className="mt-1 flex items-center">
+                  <div 
+                    title={getMilestoneMessage(calculateDaysJoined(profile.joining_date))}
+                    className="relative overflow-hidden rounded bg-gradient-to-r from-[#FACC15]/10 via-[#FACC15]/20 to-[#E2A80D]/10 px-2 py-0.5 border border-[#FACC15]/30 shadow-[0_0_8px_rgba(250,204,21,0.15)] flex items-center gap-1 hover:shadow-[0_0_12px_rgba(250,204,21,0.25)] transition-all duration-300 active:scale-95 cursor-help"
+                  >
+                    <Sparkles size={8} className="text-[#FACC15] animate-pulse shrink-0" />
+                    <span className="text-[8px] font-black uppercase tracking-wider text-[#FACC15]">
+                      DAY {calculateDaysJoined(profile.joining_date)} IN FETS
+                    </span>
+                  </div>
+                </div>
+              )}
             </div>
           </div>
 
@@ -251,27 +265,29 @@ export function MobileHome({ setActiveTab, profile }: MobileHomeProps) {
       {/* ═══════════════════════════════════════════════════════
           CLIENT WORKSPACE — prominent internal portal entry
       ═══════════════════════════════════════════════════════ */}
-      <div className="px-6 mb-8">
-        <motion.button
-          initial={{ opacity: 0, y: 12 }}
-          animate={{ opacity: 1, y: 0 }}
-          whileTap={{ scale: 0.97 }}
-          onClick={() => setActiveTab('client-portal')}
-          className="w-full sov-card !rounded-2xl !p-5 flex items-center justify-between relative overflow-hidden active:border-[#FACC15]/40 transition-all"
-        >
-          <div className="absolute inset-y-0 right-0 w-1/2 bg-gradient-to-l from-[#FACC15]/10 to-transparent blur-2xl" />
-          <div className="flex items-center gap-4 relative z-10">
-            <div className="w-12 h-12 rounded-xl bg-[#FACC15]/10 border border-[#FACC15]/25 flex items-center justify-center">
-              <Briefcase size={23} className="text-[#FACC15]" />
+      {isMithun && (
+        <div className="px-6 mb-8">
+          <motion.button
+            initial={{ opacity: 0, y: 12 }}
+            animate={{ opacity: 1, y: 0 }}
+            whileTap={{ scale: 0.97 }}
+            onClick={() => setActiveTab('client-portal')}
+            className="w-full sov-card !rounded-2xl !p-5 flex items-center justify-between relative overflow-hidden active:border-[#FACC15]/40 transition-all"
+          >
+            <div className="absolute inset-y-0 right-0 w-1/2 bg-gradient-to-l from-[#FACC15]/10 to-transparent blur-2xl" />
+            <div className="flex items-center gap-4 relative z-10">
+              <div className="w-12 h-12 rounded-xl bg-[#FACC15]/10 border border-[#FACC15]/25 flex items-center justify-center">
+                <Briefcase size={23} className="text-[#FACC15]" />
+              </div>
+              <div className="text-left">
+                <span className="font-black text-white text-base uppercase tracking-tight block leading-none mb-1">Client Portal</span>
+                <span className="text-[#FACC15]/45 text-[9px] font-bold uppercase tracking-[0.2em]">Schedules, invoice counts, support</span>
+              </div>
             </div>
-            <div className="text-left">
-              <span className="font-black text-white text-base uppercase tracking-tight block leading-none mb-1">Client Portal</span>
-              <span className="text-[#FACC15]/45 text-[9px] font-bold uppercase tracking-[0.2em]">Schedules, invoice counts, support</span>
-            </div>
-          </div>
-          <ChevronRight size={18} className="text-white/20 relative z-10" />
-        </motion.button>
-      </div>
+            <ChevronRight size={18} className="text-white/20 relative z-10" />
+          </motion.button>
+        </div>
+      )}
 
       {/* ═══════════════════════════════════════════════════════
           SAME 7-DAY OUTLOOK AS DESKTOP COMMAND CENTRE
@@ -614,6 +630,37 @@ export function MobileHome({ setActiveTab, profile }: MobileHomeProps) {
                   <div className="flex items-center gap-3">
                     <Shield size={16} className="text-[#FACC15]/60" />
                     <span className="text-[10px] font-bold uppercase tracking-wider">User Management</span>
+                  </div>
+                  <ChevronRight size={14} className="text-white/15" />
+                </button>
+                <div className="h-px bg-white/10 my-2" />
+                <button
+                  onClick={() => { setActiveTab('fets-calendar-demo'); setShowManagementSheet(false); }}
+                  className="w-full flex items-center justify-between p-3 rounded-xl transition-all active:bg-white/5 text-white/80"
+                >
+                  <div className="flex items-center gap-3">
+                    <Calendar size={16} className="text-amber-400/80" />
+                    <span className="text-[10px] font-bold uppercase tracking-wider">CELPIP</span>
+                  </div>
+                  <ChevronRight size={14} className="text-white/15" />
+                </button>
+                <button
+                  onClick={() => { setActiveTab('client-portal'); setShowManagementSheet(false); }}
+                  className="w-full flex items-center justify-between p-3 rounded-xl transition-all active:bg-white/5 text-white/80"
+                >
+                  <div className="flex items-center gap-3">
+                    <Briefcase size={16} className="text-amber-400/80" />
+                    <span className="text-[10px] font-bold uppercase tracking-wider">CLIENTS</span>
+                  </div>
+                  <ChevronRight size={14} className="text-white/15" />
+                </button>
+                <button
+                  onClick={() => { setActiveTab('cma-availability'); setShowManagementSheet(false); }}
+                  className="w-full flex items-center justify-between p-3 rounded-xl transition-all active:bg-white/5 text-white/80"
+                >
+                  <div className="flex items-center gap-3">
+                    <GraduationCap size={16} className="text-amber-400/80" />
+                    <span className="text-[10px] font-bold uppercase tracking-wider">CMA US</span>
                   </div>
                   <ChevronRight size={14} className="text-white/15" />
                 </button>

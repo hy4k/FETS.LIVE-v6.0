@@ -79,6 +79,8 @@ export const useSessionMutations = () => {
 
   const invalidateSessions = () => {
     queryClient.invalidateQueries({ queryKey: ['sessions', 'calendar'] })
+    queryClient.invalidateQueries({ queryKey: ['dashboardStats'] })
+    queryClient.invalidateQueries({ queryKey: ['upcomingSchedule'] })
   }
 
   const addMutation = useMutation({

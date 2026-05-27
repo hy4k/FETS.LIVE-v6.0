@@ -9,6 +9,7 @@ import {
     Eye, EyeOff, Trash2, Crown, Database, Briefcase,
     Server, ArrowUpRight, BookOpen, Phone,
     Layers, BarChart3, RefreshCw, Settings2, Brain, PackageSearch, ArrowRight,
+    GraduationCap, CalendarDays,
 } from 'lucide-react'
 import { useAuth } from '../hooks/useAuth'
 import { useBranch } from '../hooks/useBranch'
@@ -26,6 +27,7 @@ import { SevenDayExamOutlook } from './SevenDayExamOutlook'
 import { QuickAccessSection } from './QuickAccessSection'
 import { LIVE_SUPPORT_CLIENTS } from '../constants/liveSupportClients'
 import { format } from 'date-fns'
+import { calculateDaysJoined, getMilestoneMessage } from '../utils/dateUtils'
 
 // Exam type color map
 const EXAM_COLORS: Record<string, { bg: string; border: string; text: string; dot: string }> = {
@@ -259,8 +261,22 @@ export default function CommandCentre({ onNavigate, onAiQuery }: { onNavigate?: 
                         <div className="flex flex-col gap-1">
                             <div className="text-xl md:text-2xl font-black text-white tracking-tighter transition-all duration-500 leading-none">{profile?.full_name || 'Authorized User'}</div>
                             
+                            {profile?.joining_date && (
+                                <div className="mt-1 flex items-center">
+                                    <div 
+                                        title={getMilestoneMessage(calculateDaysJoined(profile.joining_date))}
+                                        className="relative overflow-hidden rounded bg-gradient-to-r from-[#FACC15]/10 via-[#FACC15]/20 to-[#E2A80D]/10 px-2.5 py-0.5 border border-[#FACC15]/30 shadow-[0_0_12px_rgba(250,204,21,0.15)] flex items-center gap-1.5 hover:shadow-[0_0_16px_rgba(250,204,21,0.3)] transition-all duration-300 cursor-help"
+                                    >
+                                        <Sparkles size={10} className="text-[#FACC15] animate-pulse shrink-0" />
+                                        <span className="text-[9px] font-black uppercase tracking-wider text-[#FACC15]">
+                                            DAY {calculateDaysJoined(profile.joining_date)} IN FETS
+                                        </span>
+                                    </div>
+                                </div>
+                            )}
+
                             {/* Controls inside Officer Plate */}
-                            <div className="flex items-center gap-2 mt-1">
+                            <div className="flex items-center gap-2 mt-1.5">
                                 {isMithun && (
                                     <button
                                         onClick={() => onNavigate?.('my-desk')}
@@ -366,6 +382,37 @@ export default function CommandCentre({ onNavigate, onAiQuery }: { onNavigate?: 
                                                                 </div>
                                                                 <ChevronRight size={10} className="opacity-20" />
                                                             </button>
+                                                            <div className="h-px bg-white/5 my-1" />
+                                                            <button
+                                                                onClick={() => { onNavigate?.('fets-calendar-demo'); setShowManagementMenu(false); }}
+                                                                className="w-full flex items-center justify-between p-2 rounded-sm transition-all hover:bg-white/5 text-white/80"
+                                                            >
+                                                                <div className="flex items-center gap-2">
+                                                                    <CalendarDays size={12} className="text-amber-400" />
+                                                                    <span className="text-[9px] font-bold uppercase tracking-wider">CELPIP</span>
+                                                                </div>
+                                                                <ChevronRight size={10} className="opacity-20" />
+                                                            </button>
+                                                            <button
+                                                                onClick={() => { onNavigate?.('client-portal'); setShowManagementMenu(false); }}
+                                                                className="w-full flex items-center justify-between p-2 rounded-sm transition-all hover:bg-white/5 text-white/80"
+                                                            >
+                                                                <div className="flex items-center gap-2">
+                                                                    <Briefcase size={12} className="text-amber-400" />
+                                                                    <span className="text-[9px] font-bold uppercase tracking-wider">CLIENTS</span>
+                                                                </div>
+                                                                <ChevronRight size={10} className="opacity-20" />
+                                                            </button>
+                                                            <button
+                                                                onClick={() => { onNavigate?.('cma-availability'); setShowManagementMenu(false); }}
+                                                                className="w-full flex items-center justify-between p-2 rounded-sm transition-all hover:bg-white/5 text-white/80"
+                                                            >
+                                                                <div className="flex items-center gap-2">
+                                                                    <GraduationCap size={12} className="text-amber-400" />
+                                                                    <span className="text-[9px] font-bold uppercase tracking-wider">CMA US</span>
+                                                                </div>
+                                                                <ChevronRight size={10} className="opacity-20" />
+                                                            </button>
                                                         </>
                                                     )}
                                                 </div>
@@ -449,226 +496,156 @@ export default function CommandCentre({ onNavigate, onAiQuery }: { onNavigate?: 
                 )}
 
                 {/* ═══════════════════════════════════════════════════════
-                    CANDIDATES · RAISE A CASE · OUTLOOK · LIVE SUPPORT
-                    (section rails + vertical rhythm)
+                    SYSTEM STATUS & QUICK ACTIONS
                 ═══════════════════════════════════════════════════════ */}
-                <div className="flex flex-col gap-10 md:gap-14">
-                <motion.section
+                <motion.div
                     initial={{ opacity: 0, y: 12 }}
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ delay: 0.1 }}
-                    className="grid grid-cols-1 xl:grid-cols-[1.15fr_0.85fr] gap-4 md:gap-6"
-                    aria-label="Today command overview"
+                    className="mb-8 p-6 rounded-[24px] border border-white/[0.08] bg-white/[0.02] backdrop-blur-xl shadow-xl flex flex-col xl:flex-row xl:items-center justify-between gap-6"
                 >
-                    <div className="sov-card relative overflow-hidden min-h-[240px] border-[#FACC15]/10">
-                        <div className="absolute inset-y-0 right-0 w-1/2 bg-gradient-to-l from-[#FACC15]/10 via-[#FACC15]/[0.03] to-transparent blur-2xl" />
-                        <div className="relative z-10 flex flex-col h-full gap-8">
-                            <div className="flex flex-col md:flex-row md:items-start md:justify-between gap-5">
-                                <div>
-                                    <div className="flex items-center gap-3 mb-3">
-                                        <Sparkles size={14} className="text-[#FACC15]" />
-                                        <span className="sov-label text-[#FACC15]">Today at {activeBranchLabel}</span>
-                                    </div>
-                                    <h2 className="text-2xl md:text-4xl font-black text-white tracking-tighter leading-none">
-                                        Clear command deck for daily centre operations.
-                                    </h2>
-                                    <p className="mt-4 max-w-2xl text-sm md:text-base text-white/45 leading-relaxed">
-                                        Exams, roster, case reporting, support portals, and client credentials are grouped below so the home page is easier to scan and act on.
-                                    </p>
-                                    <div className="mt-5 flex flex-wrap gap-2">
-                                        {['Today', 'Exam Operations', 'Client Workspace', 'Staff & Roster', 'Admin'].map(group => (
-                                            <span key={group} className="rounded-full border border-[#FACC15]/15 bg-[#FACC15]/8 px-3 py-1 text-[9px] font-black uppercase tracking-[0.18em] text-[#FACC15]/70">
-                                                {group}
-                                            </span>
-                                        ))}
-                                    </div>
-                                </div>
-                                <div className="rounded-2xl border border-[#FACC15]/20 bg-[#FACC15]/10 px-4 py-3 text-right shrink-0">
-                                    <div className="text-[9px] font-black uppercase tracking-[0.3em] text-[#FACC15]/70">Centre</div>
-                                    <div className="text-lg font-black text-[#FACC15] uppercase tracking-wider">{activeBranchLabel}</div>
-                                </div>
-                            </div>
-
-                            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 mt-auto">
-                                {[
-                                    { label: 'Candidates Today', value: totalCandidates, sub: `${filteredTodaysExams.length} exam sessions`, icon: Users, color: '#BADFE7' },
-                                    { label: 'Open Cases', value: dashboardData?.openEvents ?? 0, sub: 'needs attention', icon: AlertCircle, color: '#fb7185' },
-                                    { label: 'Centre Health', value: `${opsMetrics.healthScore}%`, sub: opsMetrics.topIssue, icon: Activity, color: healthColor },
-                                ].map((stat) => (
-                                    <div key={stat.label} className="rounded-2xl border border-white/[0.08] bg-black/20 p-4 shadow-[inset_0_1px_0_rgba(255,255,255,0.06)]">
-                                        <div className="flex items-center justify-between mb-4">
-                                            <div className="w-9 h-9 rounded-xl bg-white/5 border border-white/10 flex items-center justify-center">
-                                                <stat.icon size={16} style={{ color: stat.color }} />
-                                            </div>
-                                            <span className="text-[8px] font-black uppercase tracking-[0.22em] text-white/25">{stat.label}</span>
-                                        </div>
-                                        <div className="text-3xl font-black text-white tracking-tighter leading-none">{stat.value}</div>
-                                        <div className="mt-2 text-[10px] font-bold uppercase tracking-widest text-white/35">{stat.sub}</div>
-                                    </div>
-                                ))}
-                            </div>
-                        </div>
-                    </div>
-
-                    <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-1 gap-3">
-                        {[
-                            { label: 'Raise a Case', sub: 'Report incidents and issues', icon: AlertCircle, onClick: () => onNavigate?.('incident-log'), tone: 'rose' },
-                            { label: 'Client Portal', sub: `${clientWorkspaceStats.totalClients} clients, ${clientWorkspaceStats.upcomingClientSessions} upcoming slots`, icon: Briefcase, onClick: () => onNavigate?.('client-portal'), tone: 'gold' },
-                            { label: 'Roster', sub: canEditRoster(profile?.email, profile?.role) ? 'Mithun edit access enabled' : 'View-only for this user', icon: Calendar, onClick: () => onNavigate?.('fets-roster'), tone: 'gold' },
-                            { label: 'Quick Access', sub: 'Client URLs, passwords, phones and notes', icon: Key, onClick: scrollToQuickAccess, tone: 'sky' },
-                        ].map((action) => (
-                            <button
-                                key={action.label}
-                                type="button"
-                                onClick={action.onClick}
-                                className="sov-card group relative overflow-hidden min-h-[116px] text-left border-white/[0.08] hover:border-[#FACC15]/35 focus:outline-none focus-visible:ring-2 focus-visible:ring-[#FACC15]/50"
-                            >
-                                <div className={`absolute inset-0 opacity-70 transition-opacity group-hover:opacity-100 ${
-                                    action.tone === 'rose' ? 'bg-gradient-to-br from-rose-500/10 to-transparent' :
-                                    action.tone === 'sky' ? 'bg-gradient-to-br from-sky-500/10 to-transparent' :
-                                    'bg-gradient-to-br from-[#FACC15]/10 to-transparent'
-                                }`} />
-                                <div className="relative z-10 flex items-start justify-between gap-4">
-                                    <div>
-                                        <div className="w-10 h-10 rounded-xl bg-white/5 border border-white/10 flex items-center justify-center mb-4 group-hover:border-[#FACC15]/35 transition-colors">
-                                            <action.icon size={17} className="text-[#FACC15]" />
-                                        </div>
-                                        <div className="text-sm font-black text-white uppercase tracking-[0.14em]">{action.label}</div>
-                                        <div className="mt-1 text-[10px] font-bold uppercase tracking-widest text-white/35">{action.sub}</div>
-                                    </div>
-                                    <ArrowUpRight size={15} className="text-white/15 group-hover:text-[#FACC15] transition-colors" />
-                                </div>
-                            </button>
-                        ))}
-                    </div>
-                </motion.section>
-
-                <div className="relative shrink-0 py-0.5" aria-hidden>
-                    <div className="h-px w-full bg-gradient-to-r from-transparent via-[#FACC15]/22 to-transparent shadow-[0_0_20px_rgba(250,204,21,0.06)]" />
-                </div>
-
-                <motion.section
-                    initial={{ opacity: 0, y: 12 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ delay: 0.14 }}
-                    className="sov-card relative overflow-hidden border-[#FACC15]/10"
-                    aria-label="Client workspace"
-                >
-                    <div className="absolute inset-y-0 right-0 w-2/3 bg-gradient-to-l from-[#FACC15]/10 via-sky-500/[0.04] to-transparent blur-3xl" />
-                    <div className="relative z-10 grid grid-cols-1 lg:grid-cols-[1fr_auto] gap-6 items-center">
-                        <div>
-                            <div className="flex items-center gap-3 mb-3">
-                                <Briefcase size={16} className="text-[#FACC15]" />
-                                <span className="sov-label text-[#FACC15]">Client Workspace</span>
-                            </div>
-                            <h3 className="text-2xl md:text-3xl font-black text-white tracking-tighter leading-none">
-                                One place for client schedules, invoice counts, support links, and notes.
-                            </h3>
-                            <p className="mt-3 text-sm text-white/45 max-w-3xl">
-                                Open a staff-only client portal with monthly booked counts, centre splits, exam timings, support portals, and a working notes area.
-                            </p>
-                        </div>
-                        <div className="grid grid-cols-3 gap-3 min-w-full lg:min-w-[420px]">
-                            {[
-                                { label: 'Clients', value: clientWorkspaceStats.totalClients },
-                                { label: 'Active', value: clientWorkspaceStats.activeClients },
-                                { label: 'Booked', value: clientWorkspaceStats.upcomingCandidates },
-                            ].map(stat => (
-                                <div key={stat.label} className="rounded-2xl border border-white/[0.08] bg-black/20 p-4 text-center">
-                                    <div className="text-2xl font-black text-[#FACC15] tabular-nums">{stat.value}</div>
-                                    <div className="mt-2 text-[8px] font-black uppercase tracking-[0.2em] text-white/30">{stat.label}</div>
-                                </div>
-                            ))}
-                        </div>
-                        <button
-                            type="button"
-                            onClick={() => onNavigate?.('client-portal')}
-                            className="lg:col-span-2 w-full rounded-2xl border border-[#FACC15]/25 bg-[#FACC15] px-5 py-4 text-left text-black transition-all hover:brightness-105 flex items-center justify-between gap-4"
-                        >
+                    {/* Stats Group */}
+                    <div className="flex flex-wrap items-center gap-4">
+                        <div className="flex items-center gap-3 pr-6 border-r border-white/10">
+                            <span className="h-2.5 w-2.5 rounded-full bg-emerald-500 shadow-[0_0_10px_rgba(16,185,129,0.6)] animate-pulse" />
                             <div>
-                                <div className="text-sm font-black uppercase tracking-[0.18em]">Open Client Portal</div>
-                                <div className="mt-1 text-xs font-bold text-black/55">Internal-only workspace for FETS staff</div>
+                                <div className="text-[10px] font-black uppercase tracking-[0.2em] text-[#FACC15]/80">Active Center</div>
+                                <div className="text-sm font-bold text-white uppercase">{activeBranchLabel}</div>
                             </div>
-                            <ArrowUpRight size={18} />
-                        </button>
-                    </div>
-                </motion.section>
+                        </div>
 
-                <div className="relative shrink-0 py-0.5" aria-hidden>
-                    <div className="h-px w-full bg-gradient-to-r from-transparent via-[#FACC15]/22 to-transparent shadow-[0_0_20px_rgba(250,204,21,0.06)]" />
-                </div>
+                        {/* Candidates Stat */}
+                        <div className="flex items-center gap-3 px-4 py-2 rounded-xl bg-black/20 border border-white/[0.06]">
+                            <Users size={16} className="text-cyan-400" />
+                            <div>
+                                <div className="text-[9px] font-black uppercase tracking-wider text-white/30">Candidates Today</div>
+                                <div className="text-sm font-black text-white">{totalCandidates} <span className="text-[10px] font-medium text-white/50">({filteredTodaysExams.length} sessions)</span></div>
+                            </div>
+                        </div>
+
+                        {/* Open Cases Stat */}
+                        <div className="flex items-center gap-3 px-4 py-2 rounded-xl bg-black/20 border border-white/[0.06]">
+                            <AlertCircle size={16} className="text-rose-400" />
+                            <div>
+                                <div className="text-[9px] font-black uppercase tracking-wider text-white/30">Open Cases</div>
+                                <div className="text-sm font-black text-white">{dashboardData?.openEvents ?? 0} <span className="text-[10px] font-medium text-white/50">needs focus</span></div>
+                            </div>
+                        </div>
+
+                        {/* Centre Health Stat */}
+                        <div className="flex items-center gap-3 px-4 py-2 rounded-xl bg-black/20 border border-white/[0.06]">
+                            <Activity size={16} style={{ color: healthColor }} />
+                            <div>
+                                <div className="text-[9px] font-black uppercase tracking-wider text-white/30">Centre Health</div>
+                                <div className="text-sm font-black text-white">{opsMetrics.healthScore}% <span className="text-[10px] font-medium text-white/50">{opsMetrics.topIssue}</span></div>
+                            </div>
+                        </div>
+                    </div>
+
+                    {/* Actions Group */}
+                    <div className="flex flex-wrap items-center gap-3">
+                        <button
+                            onClick={() => onNavigate?.('incident-log')}
+                            className="flex items-center gap-2 px-4 py-3 rounded-xl border border-rose-500/30 bg-rose-500/10 hover:bg-rose-500/20 text-rose-400 text-xs font-bold uppercase tracking-wider transition-all duration-300 hover:scale-[1.02] active:scale-[0.98]"
+                        >
+                            <AlertCircle size={14} />
+                            Raise a Case
+                        </button>
+                        
+                        <button
+                            onClick={() => onNavigate?.('fets-roster')}
+                            className="flex items-center gap-2 px-4 py-3 rounded-xl border border-[#FACC15]/30 bg-[#FACC15]/10 hover:bg-[#FACC15]/20 text-[#FACC15] text-xs font-bold uppercase tracking-wider transition-all duration-300 hover:scale-[1.02] active:scale-[0.98]"
+                        >
+                            <Calendar size={14} />
+                            Roster
+                        </button>
+
+                        {isMithun && (
+                            <button
+                                onClick={() => onNavigate?.('client-portal')}
+                                className="flex items-center gap-2 px-4 py-3 rounded-xl border border-cyan-500/30 bg-cyan-500/10 hover:bg-cyan-500/20 text-cyan-400 text-xs font-bold uppercase tracking-wider transition-all duration-300 hover:scale-[1.02] active:scale-[0.98]"
+                            >
+                                <Briefcase size={14} />
+                                Client Workspace
+                            </button>
+                        )}
+                    </div>
+                </motion.div>
 
                 {/* ═══════════════════════════════════════════════════════
                     7-DAY EXAM OUTLOOK (syncs with centre selector)
                 ═══════════════════════════════════════════════════════ */}
-                <SevenDayExamOutlook
-                    sessions={examSchedule as any}
-                    isLoading={isLoadingSchedule}
-                    activeBranch={activeBranch}
-                    staffByDate={staffByDate}
-                    staffLoading={isLoadingRosterStaff}
-                />
-
-                <div className="relative shrink-0 py-0.5" aria-hidden>
-                    <div className="h-px w-full bg-gradient-to-r from-transparent via-[#FACC15]/22 to-transparent shadow-[0_0_20px_rgba(250,204,21,0.06)]" />
-                </div>
-
-                {/* Live support — glass + clay tiles */}
-                <motion.section
-                    initial={{ opacity: 0, y: 12 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ delay: 0.18 }}
-                    className="sov-card !p-0 overflow-hidden rounded-[24px] border border-[#FACC15]/[0.08] shadow-[inset_0_1px_0_rgba(255,255,255,0.06)]"
-                    aria-label="Test centre live support portals"
-                >
-                    <div className="px-4 md:px-5 py-3 md:py-3.5 border-b border-white/[0.06] flex items-center gap-2.5 bg-black/[0.12]">
-                        <div className="w-9 h-9 rounded-xl bg-[#FACC15]/10 border border-[#FACC15]/25 flex items-center justify-center shrink-0 shadow-[3px_3px_10px_rgba(0,0,0,0.35),inset_0_1px_0_rgba(255,255,255,0.08)]">
-                            <Headphones size={17} className="text-[#FACC15]" aria-hidden />
-                        </div>
-                        <h3 className="text-sm md:text-base font-black text-white uppercase tracking-[0.12em] leading-none">Live Support</h3>
-                    </div>
-                    <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-2.5 md:gap-3 p-3 md:p-4 bg-gradient-to-b from-black/[0.18] to-transparent">
-                        {LIVE_SUPPORT_CLIENTS.map((p) => (
-                            <a
-                                key={p.slug}
-                                href={p.supportUrl}
-                                target="_blank"
-                                rel="noopener noreferrer"
-                                title={`${p.name} — opens in a new tab`}
-                                className="group relative flex flex-col items-center justify-center overflow-hidden rounded-2xl min-h-[92px] md:min-h-[100px] px-2 py-3
-                                    border border-white/[0.12] bg-white/[0.06] backdrop-blur-xl
-                                    shadow-[8px_10px_22px_rgba(0,0,0,0.42),-6px_-6px_16px_rgba(39,87,91,0.15),inset_0_1px_0_rgba(255,255,255,0.14)]
-                                    transition-all duration-300 ease-out
-                                    hover:-translate-y-0.5 hover:border-[#FACC15]/35 hover:bg-white/[0.1]
-                                    hover:shadow-[10px_14px_28px_rgba(0,0,0,0.48),-4px_-6px_18px_rgba(250,204,21,0.08),inset_0_1px_0_rgba(255,255,255,0.2)]
-                                    focus:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-[#FACC15]/45 active:translate-y-0"
-                            >
-                                <span className="pointer-events-none absolute inset-0 rounded-2xl bg-gradient-to-br from-white/[0.12] via-transparent to-[#1a3a3d]/40 opacity-70 group-hover:opacity-90" aria-hidden />
-                                <div className="relative z-[1] w-full max-w-[140px] h-9 md:h-10 flex items-center justify-center px-1">
-                                    <img
-                                        src={p.image}
-                                        alt={p.name}
-                                        className="max-h-full max-w-full w-auto h-auto object-contain object-center opacity-[0.94] group-hover:opacity-100 transition-opacity duration-300 drop-shadow-[0_2px_8px_rgba(0,0,0,0.35)]"
-                                        loading="lazy"
-                                        decoding="async"
-                                    />
-                                </div>
-                                <span className="sr-only">{p.name}</span>
-                            </a>
-                        ))}
-                    </div>
-                </motion.section>
-                </div>
-
-                <div className="relative shrink-0 py-2 md:py-3" aria-hidden>
-                    <div className="h-px w-full bg-gradient-to-r from-transparent via-[#FACC15]/22 to-transparent shadow-[0_0_20px_rgba(250,204,21,0.06)]" />
+                <div className="mb-10">
+                    <SevenDayExamOutlook
+                        sessions={examSchedule as any}
+                        isLoading={isLoadingSchedule}
+                        activeBranch={activeBranch}
+                        staffByDate={staffByDate}
+                        staffLoading={isLoadingRosterStaff}
+                    />
                 </div>
 
                 {/* ═══════════════════════════════════════════════════════
-                    QUICK ACCESS — vendor-grouped credentials
+                    REFERENCE UTILITIES (Quick Access + Live Support)
                 ═══════════════════════════════════════════════════════ */}
-                <div id="quick-access-section" className="scroll-mt-28">
-                    <QuickAccessSection profile={profile} authUserId={user?.id} />
+                <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 items-start">
+                    
+                    {/* Quick Access Section - Left 2/3 */}
+                    <div className="lg:col-span-2">
+                        <QuickAccessSection profile={profile} authUserId={user?.id} />
+                    </div>
+
+                    {/* Help Desk Live Support - Right 1/3 */}
+                    <div className="lg:col-span-1">
+                        <motion.section
+                            initial={{ opacity: 0, y: 12 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            transition={{ delay: 0.18 }}
+                            className="sov-card !p-0 overflow-hidden rounded-[24px] border border-[#FACC15]/[0.08] shadow-[inset_0_1px_0_rgba(255,255,255,0.06)]"
+                            aria-label="Test centre live support portals"
+                        >
+                            <div className="px-5 py-4 border-b border-white/[0.06] flex items-center gap-2.5 bg-black/[0.12]">
+                                <div className="w-10 h-10 rounded-xl bg-[#FACC15]/10 border border-[#FACC15]/25 flex items-center justify-center shrink-0 shadow-[3px_3px_10px_rgba(0,0,0,0.35),inset_0_1px_0_rgba(255,255,255,0.08)]">
+                                    <Headphones size={18} className="text-[#FACC15]" aria-hidden />
+                                </div>
+                                <div>
+                                    <h3 className="text-sm font-black text-white uppercase tracking-[0.12em] leading-none">Help Desk Support</h3>
+                                    <p className="text-[9px] text-[#FACC15]/50 uppercase tracking-widest font-bold mt-1">Live support portals</p>
+                                </div>
+                            </div>
+                            <div className="grid grid-cols-2 gap-3 p-4 bg-gradient-to-b from-black/[0.18] to-transparent">
+                                {LIVE_SUPPORT_CLIENTS.map((p) => (
+                                    <a
+                                        key={p.slug}
+                                        href={p.supportUrl}
+                                        target="_blank"
+                                        rel="noopener noreferrer"
+                                        title={`${p.name} — opens in a new tab`}
+                                        className="group relative flex flex-col items-center justify-center overflow-hidden rounded-2xl min-h-[92px] px-2 py-3
+                                            border border-white/[0.12] bg-white/[0.06] backdrop-blur-xl
+                                            shadow-[8px_10px_22px_rgba(0,0,0,0.42),-6px_-6px_16px_rgba(39,87,91,0.15),inset_0_1px_0_rgba(255,255,255,0.14)]
+                                            transition-all duration-300 ease-out
+                                            hover:-translate-y-0.5 hover:border-[#FACC15]/35 hover:bg-white/[0.1]
+                                            hover:shadow-[10px_14px_28px_rgba(0,0,0,0.48),-4px_-6px_18px_rgba(250,204,21,0.08),inset_0_1px_0_rgba(255,255,255,0.2)]
+                                            focus:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-[#FACC15]/45 active:translate-y-0"
+                                    >
+                                        <span className="pointer-events-none absolute inset-0 rounded-2xl bg-gradient-to-br from-white/[0.12] via-transparent to-[#1a3a3d]/40 opacity-70 group-hover:opacity-90" aria-hidden />
+                                        <div className="relative z-[1] w-full max-w-[140px] h-9 flex items-center justify-center px-1">
+                                            <img
+                                                src={p.image}
+                                                alt={p.name}
+                                                className="max-h-full max-w-full w-auto h-auto object-contain object-center opacity-[0.94] group-hover:opacity-100 transition-opacity duration-300 drop-shadow-[0_2px_8px_rgba(0,0,0,0.35)]"
+                                                loading="lazy"
+                                                decoding="async"
+                                            />
+                                        </div>
+                                        <span className="sr-only">{p.name}</span>
+                                    </a>
+                                ))}
+                            </div>
+                        </motion.section>
+                    </div>
+
                 </div>
 
             </div>

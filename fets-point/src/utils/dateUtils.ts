@@ -86,3 +86,44 @@ export const getMonthYearIST = (date: Date): string => {
     timeZone: 'Asia/Kolkata'
   })
 }
+
+/**
+ * Calculate how many days a user has been joined as of today in IST.
+ * If joined today, returns 1.
+ * @param joiningDate - String in YYYY-MM-DD format
+ * @returns number of days joined
+ */
+export const calculateDaysJoined = (joiningDate: string): number => {
+  if (!joiningDate) return 1
+  try {
+    const todayStr = getCurrentISTDateString() // YYYY-MM-DD
+    const jDate = createISTDate(joiningDate)
+    const tDate = createISTDate(todayStr)
+    
+    // Set both to noon to ensure accurate day comparison without time-zone or DST drift
+    jDate.setHours(12, 0, 0, 0)
+    tDate.setHours(12, 0, 0, 0)
+    
+    const diffTime = tDate.getTime() - jDate.getTime()
+    const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24))
+    
+    return diffDays >= 0 ? diffDays + 1 : 1
+  } catch (error) {
+    console.error('Error calculating days joined:', error)
+    return 1
+  }
+}
+
+/**
+ * Get a motivational milestone message based on the number of days joined.
+ * @param days - Number of days joined
+ * @returns Motivational string
+ */
+export const getMilestoneMessage = (days: number): string => {
+  if (days === 1) return "Day one! A grand journey begins today. Welcome to FETS!"
+  if (days < 30) return `${days} days of making an impact! Glad to have you on board.`
+  if (days < 100) return `${days} days of excellence. You are building amazing things here!`
+  if (days < 365) return `${days} days of dedication! Halfway to a full year of success.`
+  if (days < 730) return `${days} days! Over a year of outstanding contributions. FETS is proud of you!`
+  return `${days} days! A true FETS veteran. Thank you for your leadership and loyalty!`
+}

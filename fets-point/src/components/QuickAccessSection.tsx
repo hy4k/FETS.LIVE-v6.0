@@ -1,8 +1,6 @@
 import React, { useCallback, useEffect, useMemo, useState } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import {
-  ChevronDown,
-  X,
   Plus,
   Copy,
   Trash2,
@@ -136,8 +134,6 @@ const neuCard =
   'rounded-2xl border border-white/[0.07] bg-[#16181d] shadow-[6px_8px_18px_rgba(0,0,0,0.45),-4px_-4px_14px_rgba(255,255,255,0.03),inset_0_1px_0_rgba(255,255,255,0.06)]'
 const neuInset =
   'rounded-xl border border-black/40 bg-[#0e0f12] shadow-[inset_3px_3px_10px_rgba(0,0,0,0.5),inset_-2px_-2px_8px_rgba(255,255,255,0.04)]'
-const neuModalShell =
-  'rounded-[28px] border border-white/[0.08] bg-gradient-to-br from-[#1c1f26] via-[#14161c] to-[#101115] shadow-[12px_16px_40px_rgba(0,0,0,0.55),-8px_-10px_28px_rgba(255,255,255,0.04),inset_0_1px_0_rgba(255,255,255,0.09)]'
 
 export function QuickAccessSection({
   profile,
@@ -150,9 +146,7 @@ export function QuickAccessSection({
   const [loading, setLoading] = useState(true)
   const [tableMissing, setTableMissing] = useState(false)
   const [migrationDone, setMigrationDone] = useState(false)
-  const [activeClient, setActiveClient] = useState<QuickAccessClientSlug | null>(null)
-  /** Expanded by default — same visibility as Live Support (all logos) */
-  const [collapsed, setCollapsed] = useState(false)
+  const [activeClient, setActiveClient] = useState<QuickAccessClientSlug>('prometric')
 
   const [addFieldType, setAddFieldType] = useState<QuickAccessFieldType>('other')
   const [addValue, setAddValue] = useState('')
@@ -463,7 +457,7 @@ export function QuickAccessSection({
     }
 
     return (
-      <p className="text-sm text-white/88 whitespace-pre-wrap break-words font-medium leading-relaxed">{raw}</p>
+      <p className="text-sm text-white/80 whitespace-pre-wrap break-words font-medium leading-relaxed">{raw}</p>
     )
   }
 
@@ -472,285 +466,177 @@ export function QuickAccessSection({
   }
 
   return (
-    <>
-      {/* Visual separation from Live Support: cool accent + double ring vs gold section above */}
-      <section
-        className="mb-12 rounded-[24px] border border-sky-500/25 bg-gradient-to-b from-sky-500/[0.07] via-[#0a0c10]/40 to-transparent shadow-[inset_0_1px_0_rgba(255,255,255,0.07),0_0_0_1px_rgba(56,189,248,0.06)] overflow-hidden"
-        aria-label="Quick access credentials by vendor"
-      >
-        <motion.div
-          initial={{ opacity: 0, y: 12 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.2 }}
-          className="p-3 md:p-4"
-        >
-          <button
-            type="button"
-            onClick={() => setCollapsed((c) => !c)}
-            className="w-full flex items-center justify-between gap-4 pb-3 md:pb-4 border-b border-sky-500/15 group text-left rounded-sm hover:bg-white/[0.02] transition-colors -mx-1 px-1"
-          >
-            <div className="flex items-center gap-3 min-w-0">
-              <div className="w-10 h-10 rounded-xl bg-sky-500/15 flex items-center justify-center border border-sky-400/25 shrink-0 shadow-[3px_4px_12px_rgba(0,0,0,0.35),inset_0_1px_0_rgba(255,255,255,0.1)]">
-                <LayoutGrid size={16} className="text-sky-300" />
-              </div>
-              <div className="min-w-0">
-                <h3 className="text-sm md:text-base font-black text-white uppercase tracking-[0.12em] leading-none">
-                  Quick Access
-                </h3>
-                <p className="text-[9px] text-sky-200/50 uppercase tracking-widest font-bold mt-1.5 truncate">
-                  {collapsed
-                    ? 'Your saved logins & notes — tap to expand'
-                    : `${items.length} saved · personal vault + shared client links`}
-                </p>
-              </div>
+    <section
+      id="quick-access-section"
+      className="rounded-[24px] border border-sky-500/25 bg-gradient-to-b from-sky-500/[0.07] via-[#0a0c10]/40 to-transparent shadow-[inset_0_1px_0_rgba(255,255,255,0.07),0_0_0_1px_rgba(56,189,248,0.06)] overflow-hidden"
+      aria-label="Quick access credentials by vendor"
+    >
+      <div className="p-4 md:p-6">
+        {/* Header */}
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 pb-4 border-b border-sky-500/15 mb-6">
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 rounded-xl bg-sky-500/15 flex items-center justify-center border border-sky-400/25 shrink-0 shadow-[3px_4px_12px_rgba(0,0,0,0.35),inset_0_1px_0_rgba(255,255,255,0.1)]">
+              <LayoutGrid size={16} className="text-sky-300" />
             </div>
-            <ChevronDown
-              size={20}
-              className={`shrink-0 text-sky-300/70 transition-transform duration-300 ${collapsed ? '' : 'rotate-180'}`}
-              aria-hidden
-            />
-          </button>
+            <div>
+              <h3 className="text-sm md:text-base font-black text-white uppercase tracking-[0.12em] leading-none">
+                Quick Access Vault
+              </h3>
+              <p className="text-[9px] text-sky-200/50 uppercase tracking-widest font-bold mt-1.5">
+                {items.length} saved entries · Select a vendor to view
+              </p>
+            </div>
+          </div>
 
-          {tableMissing && (
-            <p className="text-xs text-amber-400/90 mt-3 px-1 leading-relaxed">
-              Run the SQL migration{' '}
-              <code className="text-[10px] bg-white/5 px-1 rounded">supabase/migrations/20260404120000_quick_access_items.sql</code> in the
-              Supabase SQL editor to enable Quick Access storage.
-            </p>
-          )}
-
-          <AnimatePresence initial={false}>
-            {!collapsed && (
-              <motion.div
-                initial={{ height: 0, opacity: 0 }}
-                animate={{ height: 'auto', opacity: 1 }}
-                exit={{ height: 0, opacity: 0 }}
-                transition={{ duration: 0.25 }}
-                className="overflow-hidden"
+          {/* Global External Support URL & Add Button */}
+          <div className="flex items-center gap-2">
+            {activeMeta?.supportUrl && (
+              <a
+                href={activeMeta.supportUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-[10px] font-bold uppercase tracking-wider text-sky-300 hover:text-white bg-white/[0.02] border border-white/[0.06] hover:bg-white/5 hover:border-white/12 transition-all"
+                title="Official live support (new tab)"
               >
-                <div className="pt-4 grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-2.5 md:gap-3">
-                  {QA_TILES.map((c) => {
-                    const count = byClient.get(c.slug)?.length ?? 0
-                    return (
-                      <button
-                        key={c.slug}
-                        type="button"
-                        onClick={() => {
-                          setActiveClient(c.slug)
-                          setShowAddPanel(false)
-                        }}
-                        className={`group relative flex flex-col items-center justify-center overflow-hidden rounded-2xl min-h-[96px] md:min-h-[100px] px-2 py-3
-                        border border-white/[0.1] bg-[#14161c]/90 backdrop-blur-xl
-                        shadow-[8px_10px_22px_rgba(0,0,0,0.42),inset_0_1px_0_rgba(255,255,255,0.08)]
-                        transition-all duration-300 hover:-translate-y-0.5 hover:border-sky-400/35 hover:bg-[#1a1d24]
-                        focus:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-sky-400/45`}
-                      >
-                        <span
-                          className="pointer-events-none absolute inset-0 rounded-2xl bg-gradient-to-br from-sky-500/10 via-transparent to-[#0c4a6e]/20 opacity-60 group-hover:opacity-90"
-                          aria-hidden
-                        />
-                        {c.image ? (
-                          <div className="relative z-[1] w-full max-w-[120px] h-9 md:h-10 flex items-center justify-center">
-                            <img
-                              src={c.image}
-                              alt={c.name}
-                              className="max-h-full max-w-full object-contain opacity-95"
-                              loading="lazy"
-                            />
-                          </div>
-                        ) : (
-                          <div className="relative z-[1] w-14 h-14 rounded-2xl bg-sky-500/15 border border-sky-400/30 flex items-center justify-center">
-                            <span className="text-sm font-black text-sky-200 tracking-[0.2em]">FETS</span>
-                          </div>
-                        )}
-                        <span className="relative z-[1] mt-1.5 text-[9px] font-bold text-sky-200/50 uppercase tracking-widest">
-                          {count} saved
-                        </span>
-                      </button>
-                    )
-                  })}
-                </div>
-                {loading && <p className="text-xs text-white/40 mt-3 px-1">Loading…</p>}
-              </motion.div>
+                <ExternalLink size={12} />
+                <span>Support Portal</span>
+              </a>
             )}
-          </AnimatePresence>
-        </motion.div>
-      </section>
+            
+            {!showAddPanel && (
+              <button
+                type="button"
+                onClick={() => setShowAddPanel(true)}
+                className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-[10px] font-bold uppercase tracking-wider text-white bg-sky-500/25 border border-sky-400/40 hover:bg-sky-500/40 transition-all"
+              >
+                <Plus size={12} />
+                <span>Add Entry</span>
+              </button>
+            )}
+          </div>
+        </div>
 
-      <AnimatePresence>
-        {activeClient && activeMeta && (
-          <motion.div
-            role="dialog"
-            aria-modal
-            aria-labelledby="quick-access-title"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            className="fixed inset-0 z-[200] flex items-end sm:items-center justify-center p-4 bg-black/75 backdrop-blur-md"
-            onClick={() => {
-              setActiveClient(null)
-              resetAdd()
-              setEditingId(null)
-            }}
-          >
-            <motion.div
-              initial={{ y: 48, opacity: 0, scale: 0.98 }}
-              animate={{ y: 0, opacity: 1, scale: 1 }}
-              exit={{ y: 48, opacity: 0 }}
-              transition={{ type: 'spring', damping: 26, stiffness: 320 }}
-              className={`w-full max-w-lg max-h-[88vh] flex flex-col overflow-hidden ${neuModalShell}`}
-              onClick={(e) => e.stopPropagation()}
-            >
-              <div className="flex items-center justify-between gap-3 p-4 border-b border-white/[0.06] shadow-[inset_0_-1px_0_rgba(255,255,255,0.04)]">
-                <div className="flex items-center gap-3 min-w-0">
-                  {activeMeta.image ? (
-                    <div
-                      className={`w-14 h-14 rounded-2xl flex items-center justify-center shrink-0 p-1.5 ${neuInset}`}
-                    >
-                      <img src={activeMeta.image} alt="" className="max-w-full max-h-full object-contain" />
-                    </div>
-                  ) : (
-                    <div className="w-14 h-14 rounded-2xl bg-sky-500/15 border border-sky-400/25 flex items-center justify-center shrink-0">
-                      <span className="text-xs font-black text-sky-200 tracking-widest">FETS</span>
-                    </div>
-                  )}
-                  <div className="min-w-0">
-                    <h2 id="quick-access-title" className="text-base font-black text-white uppercase tracking-wide truncate">
-                      {activeMeta.name}
-                    </h2>
-                    <p className="text-[10px] text-sky-300/70 uppercase tracking-widest mt-0.5">Saved credentials</p>
-                  </div>
-                </div>
-                <div className="flex items-center gap-1 shrink-0">
-                  {activeMeta.supportUrl && (
-                    <a
-                      href={activeMeta.supportUrl}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      title="Official live support (new tab)"
-                      className="w-10 h-10 rounded-xl flex items-center justify-center text-sky-300/80 hover:text-white hover:bg-white/5 border border-transparent hover:border-white/10 transition-colors"
-                    >
-                      <ExternalLink size={18} />
-                    </a>
-                  )}
+        {tableMissing && (
+          <p className="text-xs text-amber-400/90 mb-4 px-1 leading-relaxed">
+            Run the SQL migration{' '}
+            <code className="text-[10px] bg-white/5 px-1 rounded">supabase/migrations/20260404120000_quick_access_items.sql</code> in the
+            Supabase SQL editor to enable Quick Access storage.
+          </p>
+        )}
+
+        {/* Grid Layout: Tabs Left, Vault Right */}
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+          
+          {/* Left sidebar / Tabs */}
+          <div className="md:col-span-1">
+            {/* Mobile horizontal scroll tabs */}
+            <div className="flex md:hidden overflow-x-auto gap-2 pb-3 mb-2 scrollbar-thin scrollbar-thumb-white/10">
+              {QA_TILES.map((c) => {
+                const count = byClient.get(c.slug)?.length ?? 0
+                const isActive = activeClient === c.slug
+                return (
                   <button
+                    key={c.slug}
                     type="button"
                     onClick={() => {
-                      setActiveClient(null)
-                      resetAdd()
+                      setActiveClient(c.slug)
+                      setShowAddPanel(false)
                       setEditingId(null)
                     }}
-                    className={`w-10 h-10 rounded-xl flex items-center justify-center text-white/45 hover:text-white hover:bg-white/5 ${neuInset}`}
+                    className={`flex-none flex items-center gap-2 px-3 py-2 rounded-xl border text-[10px] font-bold uppercase tracking-wider transition-all duration-300
+                      ${isActive 
+                        ? 'bg-sky-500/10 border-sky-400/50 text-white shadow-[0_0_12px_rgba(56,189,248,0.15)]' 
+                        : 'bg-[#14161c]/90 border-white/[0.08] text-white/50 hover:border-white/20 hover:text-white'}`}
                   >
-                    <X size={18} />
+                    <span>{c.name}</span>
+                    <span className={`text-[8px] font-bold px-1.5 py-0.5 rounded-full ${isActive ? 'bg-sky-400/20 text-sky-200' : 'bg-white/5 text-white/30'}`}>
+                      {count}
+                    </span>
                   </button>
-                </div>
-              </div>
+                )
+              })}
+            </div>
 
-              {/* Primary: saved items */}
-              <div className="flex-1 min-h-0 overflow-y-auto px-4 py-4 space-y-3">
-                {activeItems.length === 0 && (
-                  <div
-                    className={`${neuInset} border-dashed border-white/12 px-4 py-10 text-center`}
+            {/* Desktop vertical sidebar tabs */}
+            <div className="hidden md:flex flex-col gap-2">
+              {QA_TILES.map((c) => {
+                const count = byClient.get(c.slug)?.length ?? 0
+                const isActive = activeClient === c.slug
+                return (
+                  <button
+                    key={c.slug}
+                    type="button"
+                    onClick={() => {
+                      setActiveClient(c.slug)
+                      setShowAddPanel(false)
+                      setEditingId(null)
+                    }}
+                    className={`w-full flex items-center justify-between gap-3 px-4 py-3 rounded-xl border text-xs font-bold transition-all duration-300 text-left
+                      ${isActive 
+                        ? 'bg-sky-500/10 border-sky-400/40 text-white shadow-[inset_0_1px_0_rgba(255,255,255,0.05),0_0_12px_rgba(56,189,248,0.15)]' 
+                        : 'bg-transparent border-transparent text-white/50 hover:bg-white/[0.02] hover:text-white'}`}
                   >
-                    <p className="text-xs text-white/45 leading-relaxed">
-                      No entries yet. Use <span className="text-sky-300 font-semibold">+ Add</span> below for this client’s
-                      URL, username, password, phone number, site code, PIN, or notes.
-                    </p>
-                  </div>
-                )}
+                    <div className="flex items-center gap-3 min-w-0">
+                      {c.image ? (
+                        <img src={c.image} alt="" className="w-5 h-5 object-contain opacity-70 group-hover:opacity-100 shrink-0" />
+                      ) : (
+                        <span className="w-5 h-5 rounded-md bg-sky-500/20 flex items-center justify-center text-[8px] font-black text-sky-300 shrink-0">F</span>
+                      )}
+                      <span className="truncate">{c.name}</span>
+                    </div>
+                    <span className={`text-[9px] font-black px-2 py-0.5 rounded-full ${isActive ? 'bg-sky-400/25 text-sky-200' : 'bg-white/5 text-white/30'}`}>
+                      {count}
+                    </span>
+                  </button>
+                )
+              })}
+            </div>
+          </div>
 
-                {activeItems.map((row) => {
-                  const isShared = Boolean(row.is_global)
-                  const canModifyRow = !isShared || isMithun
-                  return (
-                  <div key={row.id} className={`p-4 space-y-3 ${neuCard} ${isShared ? 'border-[#FACC15]/20' : ''}`}>
-                    <div className="flex items-start justify-between gap-2">
-                      <div className="min-w-0 flex-1">
-                        <div className="flex flex-wrap items-center gap-2 mb-1">
-                          <p className="text-[10px] font-black uppercase tracking-[0.16em] text-sky-400/80">
-                            {row.label?.trim() || fieldLabel(row.field_type)}
-                          </p>
-                          {isShared && (
-                            <span className="inline-flex items-center gap-1 rounded-full border border-[#FACC15]/25 bg-[#FACC15]/10 px-2 py-0.5 text-[8px] font-black uppercase tracking-[0.16em] text-[#FACC15]">
-                              <Crown size={10} />
-                              Shared
-                            </span>
-                          )}
-                        </div>
-                        {row.label?.trim() && (
-                          <p className="text-[9px] text-white/30 uppercase tracking-wider">{fieldLabel(row.field_type)}</p>
-                        )}
-                      </div>
-                      <div className="flex items-center gap-0.5 shrink-0">
-                        {editingId === row.id ? (
-                          <button
-                            type="button"
-                            onClick={saveEdit}
-                            className="p-2 rounded-lg bg-sky-500/20 text-sky-200 hover:bg-sky-500/30"
-                            title="Save"
-                          >
-                            <Check size={15} />
-                          </button>
-                        ) : canModifyRow ? (
-                          <button
-                            type="button"
-                            onClick={() => startEdit(row)}
-                            className="p-2 rounded-lg bg-white/[0.04] text-white/45 hover:text-sky-200"
-                            title="Edit"
-                          >
-                            <Pencil size={15} />
-                          </button>
-                        ) : null}
-                        {canModifyRow && (
-                          <button
-                            type="button"
-                            onClick={() => handleDelete(row.id)}
-                            className="p-2 rounded-lg bg-red-500/10 text-red-400/90 hover:bg-red-500/20"
-                            title="Delete"
-                          >
-                            <Trash2 size={15} />
-                          </button>
-                        )}
+          {/* Right Panel / Credentials List */}
+          <div className="md:col-span-3 space-y-4">
+            {loading ? (
+              <div className="text-center py-10">
+                <div className="inline-block w-6 h-6 border-2 border-sky-400/30 border-t-sky-400 rounded-full animate-spin mb-2" />
+                <p className="text-xs text-white/44">Loading credentials...</p>
+              </div>
+            ) : (
+              <>
+                {/* Inline Add Panel */}
+                <AnimatePresence>
+                  {showAddPanel && (
+                    <motion.div
+                      initial={{ opacity: 0, y: -10 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      exit={{ opacity: 0, y: -10 }}
+                      className={`p-4 space-y-3 ${neuCard} border-sky-500/40 bg-sky-500/[0.02]`}
+                    >
+                      <div className="flex items-center justify-between pb-2 border-b border-white/5">
+                        <p className="text-[10px] font-black uppercase tracking-widest text-sky-300 font-bold">New credential entry</p>
                         <button
                           type="button"
-                          onClick={() =>
-                            copyToClipboard(row.value_text, row.label?.trim() || fieldLabel(row.field_type))
-                          }
-                          className="p-2 rounded-lg bg-white/[0.04] text-white/40 hover:text-sky-200"
-                          title="Copy"
+                          onClick={() => setShowAddPanel(false)}
+                          className="text-[10px] text-white/40 hover:text-white/60 uppercase font-bold"
                         >
-                          <Copy size={15} />
+                          Cancel
                         </button>
-                        {isSecretField(row.field_type) && editingId !== row.id && (
-                          <button
-                            type="button"
-                            onClick={() => toggleReveal(row.id)}
-                            className="p-2 rounded-lg bg-white/[0.04] text-white/40 hover:text-sky-200"
-                            title={revealedIds[row.id] ? 'Hide' : 'Show'}
-                          >
-                            {revealedIds[row.id] ? <EyeOff size={15} /> : <Eye size={15} />}
-                          </button>
-                        )}
                       </div>
-                    </div>
-
-                    {editingId === row.id ? (
-                      <div className="space-y-3 pt-1">
+                      
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                         <div>
-                          <label className="text-[9px] uppercase font-bold text-white/35 block mb-1">Label (your name for this)</label>
+                          <label className="text-[9px] uppercase font-bold text-white/35 block mb-1">Label / Title (optional)</label>
                           <input
-                            value={editLabel}
-                            onChange={(e) => setEditLabel(e.target.value)}
-                            placeholder="e.g. Main portal password"
+                            value={addLabel}
+                            onChange={(e) => setAddLabel(e.target.value)}
+                            placeholder="e.g. Main portal login, API Key"
                             className={`w-full px-3 py-2 text-xs text-white/90 placeholder:text-white/20 ${neuInset}`}
                           />
                         </div>
                         <div>
-                          <label className="text-[9px] uppercase font-bold text-white/35 block mb-1">Type</label>
+                          <label className="text-[9px] uppercase font-bold text-white/35 block mb-1">Field Type</label>
                           <select
-                            value={editFieldType}
-                            onChange={(e) => setEditFieldType(e.target.value as QuickAccessFieldType)}
+                            value={addFieldType}
+                            onChange={(e) => setAddFieldType(e.target.value as QuickAccessFieldType)}
                             className={`w-full px-3 py-2 text-xs text-white/90 ${neuInset}`}
                           >
                             {FIELD_OPTIONS.map((o) => (
@@ -760,104 +646,232 @@ export function QuickAccessSection({
                             ))}
                           </select>
                         </div>
-                        <div>
-                          <label className="text-[9px] uppercase font-bold text-white/35 block mb-1">Value</label>
-                          {inputForField(editFieldType, editValue, setEditValue, `edit-${row.id}`)}
-                        </div>
-                        {isMithun && (
-                          <label className="flex items-start gap-2 rounded-xl border border-[#FACC15]/15 bg-[#FACC15]/5 px-3 py-2 text-[10px] font-bold uppercase tracking-widest text-[#FACC15]/80">
-                            <input
-                              type="checkbox"
-                              className="mt-0.5 accent-[#FACC15]"
-                              checked={editShareGlobally}
-                              onChange={(e) => setEditShareGlobally(e.target.checked)}
-                            />
-                            Keep this entry shared for all users
-                          </label>
-                        )}
                       </div>
-                    ) : (
-                      renderValueDisplay(row)
-                    )}
-                  </div>
-                )})}
-              </div>
 
-              {/* Secondary: add — starts collapsed */}
-              <div className={`border-t border-white/[0.06] p-4 space-y-3 shadow-[inset_0_2px_12px_rgba(0,0,0,0.35)]`}>
-                {!showAddPanel ? (
-                  <button
-                    type="button"
-                    onClick={() => setShowAddPanel(true)}
-                    className={`w-full py-3.5 rounded-2xl flex items-center justify-center gap-2 text-xs font-black uppercase tracking-[0.2em] text-sky-200/90 hover:text-white border border-sky-500/25 bg-sky-500/10 hover:bg-sky-500/15 transition-colors ${neuInset}`}
-                  >
-                    <Plus size={16} strokeWidth={2.5} />
-                    Add entry
-                  </button>
-                ) : (
-                  <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} className="space-y-3">
-                    <div className="flex items-center justify-between">
-                      <p className="text-[10px] font-black uppercase tracking-widest text-sky-300/80">New entry</p>
+                      <div>
+                        <label className="text-[9px] uppercase font-bold text-white/35 block mb-1">Value</label>
+                        {inputForField(addFieldType, addValue, setAddValue, 'add-value')}
+                      </div>
+
+                      {isMithun && (
+                        <label className="flex items-start gap-2 rounded-xl border border-[#FACC15]/15 bg-[#FACC15]/5 px-3 py-2 text-[10px] font-bold uppercase tracking-widest text-[#FACC15]/80 cursor-pointer">
+                          <input
+                            type="checkbox"
+                            className="mt-0.5 accent-[#FACC15]"
+                            checked={addShareGlobally}
+                            onChange={(e) => setAddShareGlobally(e.target.checked)}
+                          />
+                          Share permanently with all users
+                        </label>
+                      )}
+
+                      <div className="flex justify-end gap-2 pt-2">
+                        <button
+                          type="button"
+                          onClick={() => setShowAddPanel(false)}
+                          className="px-4 py-2 rounded-xl bg-white/5 hover:bg-white/10 text-white/60 hover:text-white text-[10px] font-bold uppercase tracking-wider transition-all"
+                        >
+                          Cancel
+                        </button>
+                        <button
+                          type="button"
+                          onClick={handleAdd}
+                          className="px-4 py-2 rounded-xl bg-gradient-to-r from-sky-500 to-sky-600 hover:brightness-110 text-white text-[10px] font-bold uppercase tracking-wider transition-all"
+                        >
+                          Save Entry
+                        </button>
+                      </div>
+                    </motion.div>
+                  )}
+                </AnimatePresence>
+
+                {/* Vault List */}
+                {activeItems.length === 0 ? (
+                  <div className={`${neuInset} border-dashed border-white/12 px-4 py-12 text-center`}>
+                    <p className="text-xs text-white/45 leading-relaxed mb-4">
+                      No entries found for {activeMeta?.name} in your vault.
+                    </p>
+                    {!showAddPanel && (
                       <button
                         type="button"
-                        onClick={() => setShowAddPanel(false)}
-                        className="text-[10px] text-white/35 hover:text-white/60 uppercase font-bold"
+                        onClick={() => setShowAddPanel(true)}
+                        className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl text-xs font-bold uppercase tracking-wider text-sky-300 hover:text-white bg-sky-500/10 border border-sky-400/30 hover:bg-sky-500/20 transition-all"
                       >
-                        Cancel
+                        <Plus size={14} />
+                        Add your first entry
                       </button>
-                    </div>
-                    <div>
-                      <label className="text-[9px] uppercase font-bold text-white/35 block mb-1">Label (optional)</label>
-                      <input
-                        value={addLabel}
-                        onChange={(e) => setAddLabel(e.target.value)}
-                        placeholder="Name this field — e.g. TCC login, API key, Notes"
-                        className={`w-full px-3 py-2.5 text-xs text-white/90 placeholder:text-white/20 ${neuInset}`}
-                      />
-                    </div>
-                    <div>
-                      <label className="text-[9px] uppercase font-bold text-white/35 block mb-1">Type</label>
-                      <select
-                        value={addFieldType}
-                        onChange={(e) => setAddFieldType(e.target.value as QuickAccessFieldType)}
-                        className={`w-full px-3 py-2.5 text-xs text-white/90 ${neuInset}`}
-                      >
-                        {FIELD_OPTIONS.map((o) => (
-                          <option key={o.id} value={o.id}>
-                            {o.label}
-                          </option>
-                        ))}
-                      </select>
-                    </div>
-                    <div>
-                      <label className="text-[9px] uppercase font-bold text-white/35 block mb-1">Value</label>
-                      {inputForField(addFieldType, addValue, setAddValue, 'add-value')}
-                    </div>
-                    {isMithun && (
-                      <label className="flex items-start gap-2 rounded-xl border border-[#FACC15]/15 bg-[#FACC15]/5 px-3 py-2 text-[10px] font-bold uppercase tracking-widest text-[#FACC15]/80">
-                        <input
-                          type="checkbox"
-                          className="mt-0.5 accent-[#FACC15]"
-                          checked={addShareGlobally}
-                          onChange={(e) => setAddShareGlobally(e.target.checked)}
-                        />
-                        Share permanently with all users
-                      </label>
                     )}
-                    <button
-                      type="button"
-                      onClick={handleAdd}
-                      className="w-full py-3 rounded-2xl bg-gradient-to-r from-sky-500/90 to-sky-600/90 text-white font-black text-[10px] uppercase tracking-widest hover:brightness-110 shadow-lg shadow-sky-900/30"
-                    >
-                      Save to {activeMeta.name}
-                    </button>
-                  </motion.div>
+                  </div>
+                ) : (
+                  <div className="grid grid-cols-1 gap-3">
+                    {activeItems.map((row) => {
+                      const isShared = Boolean(row.is_global)
+                      const canModifyRow = !isShared || isMithun
+                      const isEditing = editingId === row.id
+
+                      return (
+                        <div
+                          key={row.id}
+                          className={`p-4 rounded-2xl border bg-[#16181d] shadow-md transition-all duration-300
+                            ${isShared ? 'border-[#FACC15]/20 bg-[#16181d]/85' : 'border-white/[0.06] hover:border-white/12'}
+                            ${isEditing ? 'ring-1 ring-sky-400/40 border-sky-400/40' : ''}`}
+                        >
+                          {isEditing ? (
+                            // Inline Edit Mode
+                            <div className="space-y-3">
+                              <div className="flex items-center justify-between pb-2 border-b border-white/5">
+                                <p className="text-[10px] font-black uppercase tracking-widest text-sky-300 font-bold">Edit credential</p>
+                                <button
+                                  type="button"
+                                  onClick={() => setEditingId(null)}
+                                  className="text-[10px] text-white/40 hover:text-white/60 uppercase font-bold"
+                                >
+                                  Cancel
+                                </button>
+                              </div>
+
+                              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                                <div>
+                                  <label className="text-[9px] uppercase font-bold text-white/35 block mb-1">Label (your name for this)</label>
+                                  <input
+                                    value={editLabel}
+                                    onChange={(e) => setEditLabel(e.target.value)}
+                                    placeholder="e.g. Main portal password"
+                                    className={`w-full px-3 py-2 text-xs text-white/90 placeholder:text-white/20 ${neuInset}`}
+                                  />
+                                </div>
+                                <div>
+                                  <label className="text-[9px] uppercase font-bold text-white/35 block mb-1">Type</label>
+                                  <select
+                                    value={editFieldType}
+                                    onChange={(e) => setEditFieldType(e.target.value as QuickAccessFieldType)}
+                                    className={`w-full px-3 py-2 text-xs text-white/90 ${neuInset}`}
+                                  >
+                                    {FIELD_OPTIONS.map((o) => (
+                                      <option key={o.id} value={o.id}>
+                                        {o.label}
+                                      </option>
+                                    ))}
+                                  </select>
+                                </div>
+                              </div>
+
+                              <div>
+                                  <label className="text-[9px] uppercase font-bold text-white/35 block mb-1">Value</label>
+                                  {inputForField(editFieldType, editValue, setEditValue, `edit-${row.id}`)}
+                              </div>
+
+                              {isMithun && (
+                                <label className="flex items-start gap-2 rounded-xl border border-[#FACC15]/15 bg-[#FACC15]/5 px-3 py-2 text-[10px] font-bold uppercase tracking-widest text-[#FACC15]/80 cursor-pointer">
+                                  <input
+                                    type="checkbox"
+                                    className="mt-0.5 accent-[#FACC15]"
+                                    checked={editShareGlobally}
+                                    onChange={(e) => setEditShareGlobally(e.target.checked)}
+                                  />
+                                  Keep this entry shared for all users
+                                </label>
+                              )}
+
+                              <div className="flex justify-end gap-2 pt-1">
+                                <button
+                                  type="button"
+                                  onClick={() => setEditingId(null)}
+                                  className="px-3 py-1.5 rounded-lg bg-white/5 hover:bg-white/10 text-white/60 hover:text-white text-[10px] font-bold uppercase tracking-wider transition-all"
+                                >
+                                  Cancel
+                                </button>
+                                <button
+                                  type="button"
+                                  onClick={saveEdit}
+                                  className="px-3 py-1.5 rounded-lg bg-sky-500/20 text-sky-300 border border-sky-500/30 hover:bg-sky-500/30 text-[10px] font-bold uppercase tracking-wider transition-all"
+                                >
+                                  Save
+                                </button>
+                              </div>
+                            </div>
+                          ) : (
+                            // Read Mode
+                            <div className="flex flex-col gap-2">
+                              <div className="flex items-start justify-between gap-2">
+                                <div className="min-w-0">
+                                  <div className="flex flex-wrap items-center gap-2 mb-1">
+                                    <p className="text-[10px] font-black uppercase tracking-[0.16em] text-sky-400/80">
+                                      {row.label?.trim() || fieldLabel(row.field_type)}
+                                    </p>
+                                    {isShared && (
+                                      <span className="inline-flex items-center gap-1 rounded-full border border-[#FACC15]/25 bg-[#FACC15]/10 px-2 py-0.5 text-[8px] font-black uppercase tracking-[0.16em] text-[#FACC15]">
+                                        <Crown size={10} />
+                                        Shared
+                                      </span>
+                                    )}
+                                  </div>
+                                  {row.label?.trim() && (
+                                    <p className="text-[8px] text-white/30 uppercase tracking-widest">{fieldLabel(row.field_type)}</p>
+                                  )}
+                                </div>
+                                
+                                {/* Actions */}
+                                <div className="flex items-center gap-1">
+                                  {isSecretField(row.field_type) && (
+                                    <button
+                                      type="button"
+                                      onClick={() => toggleReveal(row.id)}
+                                      className="p-1.5 rounded-lg bg-white/[0.04] text-white/40 hover:text-sky-300 transition-colors"
+                                      title={revealedIds[row.id] ? 'Hide Value' : 'Show Value'}
+                                    >
+                                      {revealedIds[row.id] ? <EyeOff size={13} /> : <Eye size={13} />}
+                                    </button>
+                                  )}
+                                  <button
+                                    type="button"
+                                    onClick={() =>
+                                      copyToClipboard(row.value_text, row.label?.trim() || fieldLabel(row.field_type))
+                                    }
+                                    className="p-1.5 rounded-lg bg-white/[0.04] text-white/45 hover:text-sky-300 transition-colors"
+                                    title="Copy Value"
+                                  >
+                                    <Copy size={13} />
+                                  </button>
+                                  {canModifyRow && (
+                                    <>
+                                      <button
+                                        type="button"
+                                        onClick={() => startEdit(row)}
+                                        className="p-1.5 rounded-lg bg-white/[0.04] text-white/45 hover:text-sky-300 transition-colors"
+                                        title="Edit Entry"
+                                      >
+                                        <Pencil size={13} />
+                                      </button>
+                                      <button
+                                        type="button"
+                                        onClick={() => handleDelete(row.id)}
+                                        className="p-1.5 rounded-lg bg-red-500/10 text-red-400/90 hover:bg-red-500/20 transition-colors"
+                                        title="Delete Entry"
+                                      >
+                                        <Trash2 size={13} />
+                                      </button>
+                                    </>
+                                  )}
+                                </div>
+                              </div>
+                              
+                              <div className="mt-1">
+                                {renderValueDisplay(row)}
+                              </div>
+                            </div>
+                          )}
+                        </div>
+                      )
+                    })}
+                  </div>
                 )}
-              </div>
-            </motion.div>
-          </motion.div>
-        )}
-      </AnimatePresence>
-    </>
+              </>
+            )}
+          </div>
+
+        </div>
+      </div>
+    </section>
   )
 }

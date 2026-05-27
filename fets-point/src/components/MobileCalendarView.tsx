@@ -157,25 +157,39 @@ export function MobileCalendarView({ setActiveTab }: MobileCalendarViewProps) {
               <button
                 key={i}
                 onClick={() => setSelectedDate(date)}
-                className={`flex-none w-12 py-2 rounded-xl flex flex-col items-center gap-0.5 transition-all ${isSelected
-                    ? 'bg-slate-800 text-white shadow-lg shadow-slate-300'
+                className={`flex-none w-14 h-20 rounded-2xl flex flex-col items-center justify-between py-2 transition-all duration-200 border ${
+                  isSelected
+                    ? 'bg-slate-900 border-slate-900 text-white shadow-lg shadow-slate-200/80 scale-105 z-10'
                     : isCurr
-                      ? 'bg-amber-50 border border-amber-200 text-slate-700'
-                      : 'bg-white border border-slate-100 text-slate-400'
-                  }`}
+                      ? 'bg-amber-50/80 border-amber-400/70 text-slate-800 shadow-sm shadow-amber-100/50'
+                      : exists
+                        ? 'bg-slate-50 border-slate-200 text-slate-800 hover:bg-slate-100'
+                        : 'bg-white border-slate-100 text-slate-600 hover:bg-slate-50'
+                }`}
               >
-                <span className={`text-[9px] font-bold uppercase ${isSelected ? 'text-slate-400' : ''}`}>
+                <span className={`text-[9px] font-extrabold uppercase tracking-wider ${
+                  isSelected ? 'text-slate-400' : isCurr ? 'text-amber-700/80' : 'text-slate-400'
+                }`}>
                   {format(date, 'EEE')}
                 </span>
-                <span className="text-base font-extrabold leading-none">{format(date, 'd')}</span>
-                {exists && (
-                  <div className="flex items-center gap-0.5 mt-0.5">
-                    <span className={`w-1.5 h-1.5 rounded-full ${isSelected ? 'bg-amber-400' : 'bg-amber-500'}`} />
-                    {count > 0 && (
-                      <span className={`text-[8px] font-bold ${isSelected ? 'text-amber-400' : 'text-slate-400'}`}>{count}</span>
-                    )}
-                  </div>
-                )}
+                <span className="text-base font-black leading-none -mt-1">
+                  {format(date, 'd')}
+                </span>
+                <div className="h-5 flex items-center justify-center">
+                  {exists ? (
+                    <span className={`px-1.5 py-0.5 rounded-full text-[9px] font-black tabular-nums leading-none ${
+                      isSelected 
+                        ? 'bg-[#f6c810] text-slate-950'
+                        : isCurr
+                          ? 'bg-slate-900 text-white'
+                          : 'bg-slate-200 text-slate-700'
+                    }`}>
+                      {count}
+                    </span>
+                  ) : (
+                    <span className="w-1.5 h-1.5 rounded-full bg-slate-200/50" />
+                  )}
+                </div>
               </button>
             );
           })}
