@@ -12032,6 +12032,7 @@ function Masthead({ branch }) {
         <div style={{ display: "flex", alignItems: "center", gap: 16, marginTop: 22 }}>
           <span style={{ width: 28, height: 1.5, background: "var(--ink-4)", borderRadius: 99 }} />
           <span className="serif-it" style={{ fontSize: "clamp(17px,2vw,23px)", color: "var(--accent)", fontWeight: 500 }}>{dateStr}</span>
+          <span className="mono" style={{ fontSize: 9, color: "var(--ink-4)", opacity: 0.5, marginLeft: 8 }}>v7.0.6</span>
         </div>
       </div>
       
