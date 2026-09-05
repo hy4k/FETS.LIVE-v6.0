@@ -39,7 +39,15 @@ jobs:
             git checkout main
             git pull --ff-only
             docker compose build app
-            docker compose up -d app
+            docker compose up -d --force-recreate app
+            echo ""
+            echo "=== Verify deployed content ==="
+            sleep 3
+            # Check the index.html hash inside the running container
+            docker compose exec app md5sum /usr/share/nginx/html/index.html 2>/dev/null || true
+            # Check which JS chunks are referenced
+            docker compose exec app grep -oP 'RedesignShell-[A-Za-z0-9]+' /usr/share/nginx/html/index.html 2>/dev/null || true
+            docker compose exec app grep -oP 'index-[A-Za-z0-9]+' /usr/share/nginx/html/index.html 2>/dev/null || true
 
       - name: Note when skipped
         if: steps.cfg.outputs.ready != 'true'
